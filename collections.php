@@ -27,23 +27,23 @@ if($line == 'Daily'){
                     } else {
                     ?>
                         <div class="row">
-                            <div class="col-md-5">
-                                <label>Select Date</label>
+                            <div class="col-md-6">
+                                <label class="form-label">Select Date</label>
                                 <input type="date" class="form-control" name="collection_date" id="collection_date" <?=$line=='Daily'?'readonly':''?> value="<?php echo $running_date ?>">
                             </div>
-                            <div class="col-md-5">
-                                <label>Select Agent</label>
+                            <div class="col-md-6">
+                                <label class="form-label">Select Agent</label>
                                 <select id="agent_id" class="form-select" required>
                                     <option value="">Select Agent</option>
                                 </select>
                             </div>
-                            <div class="col-md-2">
+                            <!--<div class="col-md-2">
                                 <br />
                                 <button class="btn btn-primary" id="agent_search">Search</button>
-                            </div>
+                            </div>-->
                         </div>
-                        <div class="mb-2">
-                            <label>Enter Customer No</label>
+                        <div class="col-md-12">
+                            <label class="form-label">Enter Customer No</label>
                             <input type="text" id="customer_no" class="form-control" placeholder="Enter customer no">
                         </div>
                         <div id="customerDetails" class="mb-3"></div>
