@@ -140,7 +140,7 @@ if (!isset($_SESSION['username'])) {
               $lines = ['Daily', 'Weekly', 'Monthly'];
               
               ?>
-              <select class="form-control" onchange="switchLine()" id="global-line-type">
+              <select class="form-control" style="cursor: pointer" onchange="switchLine()" id="global-line-type">
                 <?php
                 foreach($lines as $line){
                   if($line == $_SESSION['line']){
