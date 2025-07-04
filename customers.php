@@ -16,13 +16,13 @@ include('header.php');
                     <table id="customerTable" class=" table table-striped">
                         <thead>
                             <tr>
-                                <th>Customer No</th>
+                                <th width="10%">Cust. No</th>
                                 <th>Name</th>
                                 <th>Address Line 1</th>
                                 <th>Contact No</th>
                                 <th>Secondary Contact No</th>
                                 <th>District</th>
-                                <th>Actions</th>
+                                <th width="10%">Actions</th>
                             </tr>
                         </thead>
                         <tbody id="customerBody"></tbody>
@@ -46,23 +46,23 @@ include('header.php');
                 <div class="modal-body row g-3">
                     <input type="hidden" id="customer_id" name="id">
                     <div class="col-md-2">
-                        <label class="form-label">Customer No</label>
+                        <label class="form-label">Customer No *</label>
                         <input type="text" class="form-control" name="customer_no" id="customer_no" required>
                     </div>
                     <div class="col-md-10">
-                        <label class="form-label">Name</label>
+                        <label class="form-label">Name *</label>
                         <input type="text" class="form-control" name="name" required>
                     </div>
                     <div class="col-md-6">
-                        <label class="form-label">Contact No</label>
+                        <label class="form-label">Contact No *</label>
                         <input id="phoneMask" name="contact_no" type="text" class="form-control" required>
                     </div>
                     <div class="col-md-6">
                         <label class="form-label">Secondary Contact No</label>
-                        <input id="phoneMask" name="secondary_contact_no" type="text" class="form-control" required>
+                        <input id="phoneMask" name="secondary_contact_no" type="text" class="form-control" >
                     </div>
                     <div class="col-md-12">
-                        <label class="form-label">Address Line 1</label>
+                        <label class="form-label">Address Line 1 *</label>
                         <input type="text" class="form-control" name="address_line1" required>
                     </div>
                     <div class="col-md-12">
@@ -70,11 +70,11 @@ include('header.php');
                         <input type="text" class="form-control" name="address_line2">
                     </div>
                     <div class="col-md-6">
-                        <label class="form-label">District</label>
+                        <label class="form-label">District *</label>
                         <input type="text" class="form-control" name="district" required>
                     </div>
                     <div class="col-md-3">
-                        <label class="form-label">Pincode</label>
+                        <label class="form-label">Pincode *</label>
                         <input type="text" class="form-control" name="pincode" required>
                     </div>
                     <div class="col-md-3">
@@ -133,7 +133,7 @@ include('footer.php');
                 <td>${c.contact_no}</td>
                 <td>${c.secondary_contact_no}</td>
                 <td>${c.district}</td>
-                <td>
+                <td style="white-space: nowrap;">
                     <button class='btn btn-sm btn-primary' onclick='editCustomer(${JSON.stringify(c)})'>Edit</button>
                     <button class='btn btn-sm btn-success' onclick='newCustomer(${JSON.stringify(c)})'>Create New</button>
                 </td>

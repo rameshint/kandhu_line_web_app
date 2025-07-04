@@ -23,7 +23,7 @@ function formatToIndianCurrency($amount) {
 
 function getBusinessDate(){
     global $conn;
-    $sql = "SELECT date_add(MAX(closure_date),interval 1 DAY) running_date FROM day_summary";
+    $sql = "SELECT date_add(MAX(closure_date),interval 1 DAY) running_date FROM day_summary where line = '".$_SESSION['line']."'";
     $stmt = $conn->prepare($sql);
     $stmt->execute();
     $result = $stmt->get_result();

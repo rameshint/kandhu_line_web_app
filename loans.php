@@ -2,9 +2,27 @@
 $title = 'Loans';
 include('header.php');
 include_once'utility.php';
-$running_date = getBusinessDate();
+
+$loan_type = $_SESSION['line'];
+if($loan_type == 'Daily'){
+    $running_date = getBusinessDate();
+}else{
+    $date_obj = new DateTime();
+    $running_date = $date_obj->format('Y-m-d');
+}
 $closing_date = new DateTime($running_date);
-$closing_date->modify('+100 days');
+ 
+         
+if($loan_type=='Daily'){
+    $tenure = 100;
+    $closing_date->modify('+100 days');
+}else if($loan_type=='Weekly'){
+    $tenure = 10;
+    $closing_date->modify('+10 weeks');
+}else if($loan_type=='Monthly'){
+    $tenure = 10;
+    $closing_date->modify('+10 months');
+}
 
 ?>
 
@@ -77,40 +95,36 @@ $closing_date->modify('+100 days');
                     <input type="hidden" name="id" id="loan_id">
                     <input type="hidden" name="customer_id" id="form_customer_id">
                     <div class="col-md-6">
-                        <label class="form-label">Type of Loan</label>
-                        <select class="form-select" id="loan_type" name="loan_type" required>
-                            <option value="Daily">Daily</option>
-                            <option value="Weekly">Weekly</option>
-                            <option value="Monthly">Monthly</option>
-                        </select>
+                        <label class="form-label">Line *</label>
+                        <input type="text" readonly class="form-control " id="loan_type" name="loan_type" value="<?=$loan_type?>" />
                     </div>
                     <div class="col-md-6">
-                        <label class="form-label ">Tenure</label>
-                        <input type="number" class="form-control calculateLoanAmount calculateExpiryDate" name="tenure" id="tenure"  value="100" required max="100" min="1">
+                        <label class="form-label ">Tenure *</label>
+                        <input type="number" class="form-control calculateLoanAmount calculateExpiryDate" name="tenure" id="tenure"  value="<?=$tenure?>" required max="100" min="1">
                     </div>
                     <div class="col-md-6">
-                        <label class="form-label">Opening Date</label>
-                        <input type="date" class="form-control calculateExpiryDate" name="loan_date" id="loan_date" readonly required value="<?=$running_date?>">
+                        <label class="form-label">Opening Date *</label>
+                        <input type="date" class="form-control calculateExpiryDate" name="loan_date" id="loan_date" <?=$_SESSION['line']=='Daily'?'readonly':''?> required value="<?=$running_date?>">
                     </div>
                     <div class="col-md-6">
-                        <label class="form-label">Closing Date</label>
+                        <label class="form-label">Closing Date *</label>
                         <input type="date" class="form-control" name="expiry_date" id="expiry_date" readonly="true" required value="<?=$closing_date->format('Y-m-d')?>">
                     </div>
                     <div class="col-md-6">
-                        <label class="form-label">Amount</label>
+                        <label class="form-label">Amount *</label>
                         <input type="number" class="form-control calculateLoanAmount" name="amount" id="total_amount" required>
                     </div>
                     <div class="col-md-6">
-                        <label class="form-label">Interest</label>
+                        <label class="form-label">Interest *</label>
                         <input type="number" class="form-control calculateLoanAmount" name="interest" id="loan_interest" required>
                     </div>
                     <div class="col-md-6">
-                        <label class="form-label">File Charge</label>
+                        <label class="form-label">File Charge *</label>
                         <input type="number" class="form-control calculateLoanAmount" name="file_charge" id="loan_file_charge" required>
                     </div>
 
                     <div class="col-md-6">
-                        <label class="form-label">Agent</label>
+                        <label class="form-label">Agent *</label>
                         <select name="agent_id" id="agent_id" class="form-select" required>
                             <option value="">Select Agent</option>
                         </select>
@@ -207,16 +221,7 @@ include('footer.php');
             calculateLoanAmount()
         });
 
-        $(document).on("change", '#loan_type', function() {
-            if($(this).val()=='Daily'){
-                $("#tenure").val(100)
-            }else if($(this).val()=='Weekly'){
-                $("#tenure").val(10)
-            }else if($(this).val()=='Monthly'){
-                $("#tenure").val(10)
-            }
-            calculateExpiryDate()
-        })
+         
 
         $(document).on("blur", ".calculateExpiryDate", function() {
             calculateExpiryDate()

@@ -2,8 +2,14 @@
 $title = 'Expenses';
 include('header.php');
 include_once 'utility.php';
-$running_date = getBusinessDate();
 
+$line = $_SESSION['line'];
+if($line == 'Daily'){
+    $running_date = getBusinessDate();
+}else{
+    $date_obj = new DateTime();
+    $running_date = $date_obj->format('Y-m-d');
+}
 ?>
 <div class="row">
     <div class="col-12">
@@ -57,7 +63,7 @@ $running_date = getBusinessDate();
             <div class="modal-body row g-2">
                 <div class="col-md-6">
                     <label for="expense_date">Date</label>
-                    <input type="date" name="expense_date" readonly class="form-control" value="<?php echo $running_date ?>" required>
+                    <input type="date" name="expense_date" <?=$line=='Daily'?'readonly':''?>  class="form-control" value="<?php echo $running_date ?>" required>
                 </div>
 
                 <div class="col-md-6">

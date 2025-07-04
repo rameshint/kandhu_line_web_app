@@ -8,10 +8,10 @@ if ($_GET['customer_no'] != '') {
     $sql = "
         SELECT l.id, l.loan_date,l.amount, l.tenure, l.expiry_date, l.loan_type,c.name,c.customer_no FROM loans l
         INNER JOIN customers c ON c.id = l.customer_id
-        WHERE c.customer_no = ? AND l.`status` = 'Open'  ORDER BY loan_date DESC LIMIT 1
+        WHERE c.customer_no = ? AND l.`status` = 'Open' and l.loan_type = ?  ORDER BY loan_date DESC LIMIT 1
     ";
     $stmt = $conn->prepare($sql);
-    $stmt->bind_param("s", $_GET['customer_no']);
+    $stmt->bind_param("ss", $_GET['customer_no'], $_SESSION['line']);
     $stmt->execute();
     $result = $stmt->get_result();
     $loan = $result->fetch_assoc();

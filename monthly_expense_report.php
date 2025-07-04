@@ -21,12 +21,12 @@ if ($start_date < $end_date) {
     $sql = "
         SELECT DATE_FORMAT(e.expense_date,'%d') dat, category,SUM(amount) amount 
         FROM expenses e 
-        WHERE e.flag = 1 and e.expense_date BETWEEN ? AND ? 
+        WHERE e.flag = 1 and e.expense_date BETWEEN ? AND ?  and line = ?
         GROUP BY DATE_FORMAT(e.expense_date,'%d'), category 
         ORDER BY DATE_FORMAT(e.expense_date,'%d'), category 
     ";
     $stmt = $conn->prepare($sql);
-    $stmt->bind_param("ss", $st, $et);
+    $stmt->bind_param("sss", $st, $et, $_SESSION['line']);
     $stmt->execute();
     $result = $stmt->get_result();
     $expenses = [];
@@ -42,7 +42,6 @@ if ($start_date < $end_date) {
 <div class="row">
     <div class="col-12">
         <!-- The icons -->
-
         <div class="card card-outline">
             <div class="card-header">
                 <h3 class="card-title"> Monthly Expenses Report</h3>

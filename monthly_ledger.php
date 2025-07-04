@@ -18,9 +18,9 @@ $et = $end_date->format('Y-m-d');
 
 
 if ($start_date < $end_date) {
-    $sql = "select net_amount FROM day_summary WHERE closure_date < ? ORDER BY closure_date DESC LIMIT 1";
+    $sql = "select net_amount FROM day_summary WHERE  closure_date < ? and line = ? ORDER BY closure_date DESC LIMIT 1";
     $stmt = $conn->prepare($sql);
-    $stmt->bind_param("s", $st);
+    $stmt->bind_param("ss", $st, $_SESSION['line']);
     $stmt->execute();
     $result = $stmt->get_result();
     $opening_balance = 0;
@@ -30,10 +30,10 @@ if ($start_date < $end_date) {
         SELECT SUM(total_loans) tot_loans, SUM(total_collections) tot_cols, SUM(total_expenses) tot_exp, SUM(total_temp_loans) tot_temp_loans,
         SUM(total_temp_loan_payments) tot_pay,SUM(total_investments) tot_inv 
         FROM day_summary 
-        WHERE closure_date BETWEEN ? AND ?
+        WHERE closure_date BETWEEN ? AND ? and line = ?
     ";
     $stmt = $conn->prepare($sql);
-    $stmt->bind_param("ss", $st, $et);
+    $stmt->bind_param("sss", $st, $et, $_SESSION['line']);
     $stmt->execute();
     $result = $stmt->get_result();
     $collections = [];

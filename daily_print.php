@@ -2,11 +2,9 @@
 $title = 'Report - Customer Loans';
 include('header.php');
 require 'db.php';
-if ($_GET['loan_type'] != '') {
-    $loan_type = $_GET['loan_type'];
-} else {
-    $loan_type = 'Daily';
-}
+ 
+$loan_type = $_SESSION['line'];
+ 
 $sql = "
 SELECT distinct c.customer_no,c.name FROM loans l
 INNER JOIN customers c ON c.id = l.customer_id
@@ -34,7 +32,7 @@ $result = $conn->query($sql);
                 <h3 class="card-title">Customer List</h3>
             </div>
             <div class="card-body">
-                <form method="GET" accept="#">
+                <form method="GET" accept="#" style="display:none">
                     <div class="row">
 
                         <div class="col-md-5">

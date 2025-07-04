@@ -2,13 +2,15 @@
 require 'db.php';
 
 // Fetch all loans + sum of collections on that date
-$stmt = $conn->prepare("
+$sql = "
     SELECT c.customer_no, c.name, l.loan_date, l.amount, l.interest, l.file_charge,l.tenure,l.loan_type,a.name agent FROM loans l
 INNER JOIN customers c ON l.customer_id = c.id
 INNER JOIN agents a ON a.id = l.agent_id
-WHERE l.flag = 0 
+WHERE l.flag = 0 and l.loan_type = '".$_SESSION['line']."'
 ORDER BY a.name
-"); 
+";
+$stmt = $conn->prepare($sql); 
+
 $stmt->execute();
 $result = $stmt->get_result();
 
@@ -19,15 +21,16 @@ while ($row = $result->fetch_assoc()) {
 
 $flag = 0;
 
-// Fetch all loans + sum of collections on that date
-$stmt = $conn->prepare("
+$sql = "
     SELECT cs.customer_no, a.name agent, cs.name, l.amount,l.loan_type, c.collection_date,c.head, c.amount collection_amount FROM collections c 
-INNER JOIN loans l ON l.id = c.loan_id
+INNER JOIN loans l ON l.id = c.loan_id and l.loan_type = '".$_SESSION['line']."'
 INNER JOIN customers cs ON cs.id = l.customer_id
 INNER JOIN agents a ON a.id = l.agent_id
-WHERE c.flag = 0
+WHERE c.flag = 0 
 ORDER BY a.name
-"); 
+";
+// Fetch all loans + sum of collections on that date
+$stmt = $conn->prepare($sql); 
 $stmt->execute();
 $result = $stmt->get_result();
 
@@ -37,9 +40,9 @@ while ($row = $result->fetch_assoc()) {
 }
 
 $net = 0;
-
-$stmt = $conn->prepare("SELECT  DATE_ADD(closure_date,INTERVAL 1 DAY) closure_date, net_amount 
-FROM day_summary ORDER BY id DESC LIMIT 1 ");
+$sql = "SELECT  DATE_ADD(closure_date,INTERVAL 1 DAY) closure_date, net_amount 
+FROM day_summary where line = '".$_SESSION['line']."' ORDER BY id DESC LIMIT 1 ";
+$stmt = $conn->prepare($sql);
 $stmt->execute();
 $result = $stmt->get_result();
 $table = '';
@@ -47,18 +50,20 @@ $num_rows = mysqli_num_rows($result);
 $closure_date = date("Y-m-d");
 if($num_rows > 0){
     $row = $result->fetch_assoc();
-    $closure_date = $row['closure_date'];
+    if($_SESSION['line'] == 'Daily'){
+        $closure_date = $row['closure_date'];
+    } 
     $table .= '<tr><th >Date</th><td align=right>'.$closure_date.'</td></tr>';
     $table .= '<tr><th style="text-align:right">Opening Balance</th><td align=right>'.formatToIndianCurrency($row['net_amount']).'</td></tr>';
     $net += $row['net_amount'];
 }else{
     $table .= '<tr><th align=left>Date</th><td align=right>'.$closure_date.'</td></tr>';
 }
-
-$stmt = $conn->prepare("SELECT a.name investor,SUM(i.amount) amount  FROM investments i 
+$sql = "SELECT a.name investor,SUM(i.amount) amount  FROM investments i 
 INNER JOIN agents a ON a.id = i.agent_id
-WHERE i.flag = 0
-GROUP BY a.id");
+WHERE i.flag = 0 and line = '".$_SESSION['line']."'
+GROUP BY a.id";
+$stmt = $conn->prepare($sql);
 $stmt->execute();
 $result = $stmt->get_result();
 $total_investments = 0;
@@ -75,8 +80,8 @@ if($num_rows > 0){
     $total_investments = $total;
     $flag = 1;
 }
-
-$stmt = $conn->prepare("SELECT source_name , amount  FROM temp_loans i WHERE flag = 0");
+$sql = "SELECT source_name , amount  FROM temp_loans i WHERE flag = 0 and line = '".$_SESSION['line']."'";
+$stmt = $conn->prepare($sql);
 $stmt->execute();
 $result = $stmt->get_result();
 $num_rows = mysqli_num_rows($result);
@@ -94,11 +99,11 @@ if($num_rows > 0){
     $flag = 1;
 }
 
-
-$stmt = $conn->prepare("SELECT t.source_name,SUM(i.amount) amount FROM temp_loan_payments i 
-INNER JOIN temp_loans t ON t.id = i.temp_loan_id
+$sql = "SELECT t.source_name,SUM(i.amount) amount FROM temp_loan_payments i 
+INNER JOIN temp_loans t ON t.id = i.temp_loan_id and t.line = '".$_SESSION['line']."'
 WHERE i.flag = 0
-GROUP BY i.temp_loan_id");
+GROUP BY i.temp_loan_id";
+$stmt = $conn->prepare($sql);
 $stmt->execute();
 $result = $stmt->get_result();
 $num_rows = mysqli_num_rows($result);
@@ -117,11 +122,11 @@ if($num_rows > 0){
 }
 
 
-
-$stmt = $conn->prepare("SELECT a.name agent,SUM(e.amount - ifnull(e.interest,0) - ifnull(e.file_charge,0)) amount  FROM loans e 
+$sql = "SELECT a.name agent,SUM(e.amount - ifnull(e.interest,0) - ifnull(e.file_charge,0)) amount  FROM loans e 
 INNER JOIN agents a ON a.id = e.agent_id
-WHERE e.flag = 0
-GROUP BY a.id");
+WHERE e.flag = 0 and e.loan_type = '".$_SESSION['line']."'
+GROUP BY a.id";
+$stmt = $conn->prepare($sql);
 $stmt->execute();
 $result = $stmt->get_result();
 
@@ -138,11 +143,12 @@ if($num_rows > 0){
     $total_loans = $total;
     $flag = 1;
 }
-
-$stmt = $conn->prepare("SELECT a.name agent,SUM(e.amount) amount  FROM collections e 
+$sql = "SELECT a.name agent,SUM(e.amount) amount  FROM collections e 
 INNER JOIN agents a ON a.id = e.agent_id
-WHERE e.flag = 0
-GROUP BY a.id");
+inner join loans l on l.id = e.loan_id and l.loan_type = '".$_SESSION['line']."'
+WHERE e.flag = 0 
+GROUP BY a.id";
+$stmt = $conn->prepare($sql);
 $stmt->execute();
 $result = $stmt->get_result();
 
@@ -159,11 +165,11 @@ if($num_rows > 0){
     $total_collections = $total;
     $flag = 1;
 }
-
-$stmt = $conn->prepare("SELECT category ,SUM(e.amount) amount  FROM expenses e 
+$sql = "SELECT category ,SUM(e.amount) amount  FROM expenses e 
 INNER JOIN agents a ON a.id = e.agent_id
-WHERE e.flag = 0
-GROUP BY a.id");
+WHERE e.flag = 0 and line = '".$_SESSION['line']."'
+GROUP BY a.id";
+$stmt = $conn->prepare($sql);
 $stmt->execute();
 $result = $stmt->get_result();
 
@@ -181,8 +187,12 @@ if($num_rows > 0){
     $flag = 1;
 }
 
+if($_SESSION['line'] == 'Daily'){
+    $flag = 1;
+}
 
-#if ($flag){
+
+if ($flag){
     $table .= '<tr><th style="text-align: right;">Closing Balance</th><th style="text-align: right;">'.formatToIndianCurrency($net).'</th></tr>';
     $table .= '<tr><th style="text-align: center;" colspan=2>
         <form action="save_day_summary.php" method="post">
@@ -200,7 +210,7 @@ if($num_rows > 0){
        $table .='
         </form>
     </th></tr>';
-#}
+}
 
 
 echo json_encode(['loans' => $loans, 'collections' => $collections, 'summary' => $table]);

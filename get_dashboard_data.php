@@ -2,17 +2,18 @@
 include_once'db.php';
 ini_set("display_errors",0);
 $sql = "SELECT * FROM (
-            SELECT 'closing_balance' head, net_amount FROM day_summary ORDER BY id DESC LIMIT 1
+            SELECT 'closing_balance' head, net_amount FROM day_summary where line = '".$_SESSION['line']."' ORDER BY id DESC LIMIT 1
         ) a
         UNION all
-        SELECT 'total_investments' head, SUM(amount) value FROM investments l 
+        SELECT 'total_investments' head, SUM(amount) value FROM investments l where l.line = '".$_SESSION['line']."'
         UNION ALL
         SELECT 'loan_outstanding' head, SUM(l.amount - IFNULL(c.collected,0)) value FROM loans l 
         LEFT JOIN (select loan_id, sum(amount) collected from collections WHERE flag = 1 AND head= 'EMI' GROUP BY loan_id) c ON c.loan_id = l.id
-        WHERE l.`status` = 'Open'
+        WHERE l.`status` = 'Open' and l.loan_type = '".$_SESSION['line']."'
         UNION ALL
         SELECT 'temporary_loan_outstanding' head, SUM(t.amount - t.repaid_amount)  FROM temp_loans t 
-        WHERE t.flag = 1";
+        WHERE t.flag = 1 and t.line = '".$_SESSION['line']."'";
+ 
 $result = mysqli_query($conn, $sql);
 $tiles = [];
 while($row = mysqli_fetch_assoc($result)) {
@@ -29,7 +30,7 @@ for($i=6; $i>=1; $i--){
 }
 
 $sql = "SELECT date_format(l.loan_date, '%Y-%m') mon, SUM(amount) amt FROM loans l 
-        WHERE loan_date >= ADDDATE(CURRENT_DATE,INTERVAL -6 month) 
+        WHERE loan_date >= ADDDATE(CURRENT_DATE,INTERVAL -6 month) and loan_type = '".$_SESSION['line']."'
         GROUP BY date_format(l.loan_date, '%Y-%m')";
 $result = mysqli_query($conn, $sql);
 while($row = mysqli_fetch_assoc($result)) {
@@ -37,8 +38,9 @@ while($row = mysqli_fetch_assoc($result)) {
         $loan_collections[$row['mon']]['loans'] = $row['amt'];
 }
 
-$sql = "SELECT DATE_FORMAT(l.collection_date, '%Y-%m') mon, SUM(amount) amt FROM collections l 
-        WHERE collection_date >= ADDDATE(CURRENT_DATE,INTERVAL -6 month) 
+$sql = "SELECT DATE_FORMAT(l.collection_date, '%Y-%m') mon, SUM(l.amount) amt FROM collections l 
+        inner join loans c on c.id = l.loan_id and c.loan_type = '".$_SESSION['line']."'
+        WHERE l.collection_date >= ADDDATE(CURRENT_DATE,INTERVAL -6 month) 
         GROUP BY date_format(l.collection_date, '%Y-%m')";
 $result = mysqli_query($conn, $sql);
 while($row = mysqli_fetch_assoc($result)) {
@@ -68,7 +70,7 @@ for($i=6; $i>=0; $i--){
 
 $sql = "SELECT l.loan_date dat, SUM(amount) amt FROM loans l 
 WHERE loan_date >= ADDDATE(CURRENT_DATE,INTERVAL -7 DAY) -- AND loan_date <= current_date
-AND flag = 1
+AND flag = 1 and loan_type = '".$_SESSION['line']."'
 GROUP BY l.loan_date";
 $result = mysqli_query($conn, $sql);
 while($row = mysqli_fetch_assoc($result)) {
@@ -76,9 +78,10 @@ while($row = mysqli_fetch_assoc($result)) {
         $loan_collections[$row['dat']]['loans'] = $row['amt'];
 }
 
-$sql = "SELECT l.collection_date dat, SUM(amount) amt FROM collections l 
-WHERE collection_date >= ADDDATE(CURRENT_DATE,INTERVAL -7 DAY) 
-AND flag = 1
+$sql = "SELECT l.collection_date dat, SUM(l.amount) amt FROM collections l 
+inner join loans c on c.id = l.loan_id and c.loan_type = '".$_SESSION['line']."'
+WHERE l.collection_date >= ADDDATE(CURRENT_DATE,INTERVAL -7 DAY) 
+AND l.flag = 1
 GROUP BY l.collection_date";
 $result = mysqli_query($conn, $sql);
 while($row = mysqli_fetch_assoc($result)) {
@@ -98,10 +101,11 @@ foreach($loan_collections as $date => $detail){
 $output['loan_collections_days'] =  ['dates'=>$loan_col_days, 'loans'=> $loans, 'collections'=> $collections];
 
 
-$sql = "SELECT collection_date,SUM(amount)  amt
-FROM collections 
-WHERE flag = 1 AND collection_date >= date_sub(CURRENT_DATE,INTERVAL 35 DAY) 
-GROUP BY collection_date";
+$sql = "SELECT c.collection_date,SUM(c.amount)  amt
+FROM collections c
+inner join loans l on l.id = c.loan_id and l.loan_type = '".$_SESSION['line']."'
+WHERE c.flag = 1 AND c.collection_date >= date_sub(CURRENT_DATE,INTERVAL 35 DAY) 
+GROUP BY c.collection_date";
 $result = mysqli_query($conn, $sql);
 $collections = [];
 while($row = mysqli_fetch_assoc($result)) {
@@ -147,7 +151,7 @@ IFNULL(a.collected,0) collected
 FROM loans l
 INNER JOIN customers c ON c.id = l.customer_id
 LEFT JOIN (select loan_id, sum(amount) collected from collections WHERE flag = 1 GROUP BY loan_id) a ON a.loan_id = l.id
-WHERE l.`status` = 'Open'),
+WHERE l.`status` = 'Open' AND l.loan_type = '".$_SESSION['line']."'),
 tab1 AS (SELECT * , if(tenure < diff, tenure, diff) * emi to_be_paid , if(loan_date>expiry_date, 'Overdue','LatePay') status FROM cte c)
 SELECT * , FLOOR((to_be_paid - collected) / emi) pending_emi FROM tab1
 WHERE collected < to_be_paid

@@ -3,7 +3,13 @@ $title = 'Temporary Loans';
 include('header.php');
 include('db.php');
 include_once 'utility.php';
-$running_date = getBusinessDate();
+$line = $_SESSION['line'];
+if($line == 'Daily'){
+    $running_date = getBusinessDate();
+}else{
+    $date_obj = new DateTime();
+    $running_date = $date_obj->format('Y-m-d');
+}
 ?>
 <div class="row">
   <div class="col-12">
@@ -26,7 +32,7 @@ $running_date = getBusinessDate();
                 <input type="text" name="source_name" class="form-control" placeholder="Source Name" required>
               </div>
               <div class="col-md-2">
-                <input type="date" name="borrow_date" class="form-control" readonly required value="<?= $running_date ?>">
+                <input type="date" name="borrow_date" class="form-control" <?=$line=='Daily'?'readonly':''?>   required value="<?= $running_date ?>">
               </div>
               <div class="col-md-2">
                 <input type="number" name="amount" class="form-control" placeholder="Amount" step="0.01" required>
@@ -64,6 +70,7 @@ $running_date = getBusinessDate();
               $res = $conn->query("SELECT t.*, ifnull(u.amount,0) unclear_repaid_amount, ifnull(i.amount,0) interest_paid FROM temp_loans t 
               LEFT JOIN (SELECT temp_loan_id, SUM(amount) amount FROM temp_loan_payments WHERE flag = 0 GROUP BY temp_loan_id) u ON u.temp_loan_id = t.id
               LEFT JOIN (SELECT temp_loan_id, SUM(amount) amount FROM temp_loan_payments WHERE flag = 1 and head = 'Interest' GROUP BY temp_loan_id) i ON i.temp_loan_id = t.id
+              where line = '".$_SESSION['line']."'
               ORDER BY borrow_date DESC");
 
               while ($row = $res->fetch_assoc()) {
@@ -115,7 +122,7 @@ $running_date = getBusinessDate();
         <div class="modal-body">
           <div class="mb-2">
             <label>Date</label>
-            <input type="date" name="repay_date" class="form-control mb-2" required readonly value="<?=$running_date ?>">
+            <input type="date" name="repay_date" class="form-control mb-2" required  <?=$line=='Daily'?'readonly':''?>   value="<?=$running_date ?>">
           </div>
           <div class="mb-2">
             <label>Repayment Type</label>

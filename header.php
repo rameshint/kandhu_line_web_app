@@ -134,12 +134,33 @@ if (!isset($_SESSION['username'])) {
           </li>-->
           <!--end::Navbar Search-->
           <!--begin::Fullscreen Toggle-->
-          <!--<li class="nav-item">
-            <a class="nav-link" href="#" data-lte-toggle="fullscreen">
-              <i data-lte-icon="maximize" class="bi bi-arrows-fullscreen"></i>
-              <i data-lte-icon="minimize" class="bi bi-fullscreen-exit" style="display: none"></i>
-            </a>
-          </li>-->
+          <li class="nav-item" style="align-content: center">
+            <?php
+            if($_SESSION['role'] == 'admin'){
+              $lines = ['Daily', 'Weekly', 'Monthly'];
+              
+              ?>
+              <select class="form-control" onchange="switchLine()" id="global-line-type">
+                <?php
+                foreach($lines as $line){
+                  if($line == $_SESSION['line']){
+                    echo '<option selected>'.$line.'</option>';
+                  }else{
+                    echo '<option>'.$line.'</option>';
+                  }
+                }
+                ?>
+              </select>
+              <?php
+            }else{
+            ?>
+            <b><?php
+            echo strtoupper($_SESSION['line']);
+            ?></b>
+            <?php 
+            }
+            ?>
+          </li>
           <li class="nav-item">
             <a class="nav-link" href="logout.php">
               <i title="Logout" class="bi bi-box-arrow-right"></i>
@@ -191,7 +212,7 @@ if (!isset($_SESSION['username'])) {
             'investments.php' => 'Investments',
             'agents.php' => 'Agents',
             'Reports' => [
-              'daily_print.php' => 'Daily Print',
+              'daily_print.php' => 'Collection Print',
               'day_closure_report.php' => 'Day Closure Report',
               'customer_loans_report.php' => 'Loans Report',
               'open_loan_collection_report.php' => 'Collection Report',
@@ -209,7 +230,7 @@ if (!isset($_SESSION['username'])) {
             'Day Closure',
             'Temporary Loans',
             'Investments',
-            'Reports' => ['Daily Print', 'Collection Report','Day Closure Report']
+            'Reports' => ['Collection Print', 'Collection Report','Day Closure Report']
           ];
 
           

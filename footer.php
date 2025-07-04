@@ -110,6 +110,13 @@
     }).format(amount);
     return formattedAmount
   }
+
+  function switchLine(){
+    let line  = $("#global-line-type").val()
+    $.get('switch_line.php?line=' + line, function(data) {
+      location.reload();
+    });
+  }
 </script>
 <!--end::OverlayScrollbars Configure-->
 <!-- OPTIONAL SCRIPTS -->

@@ -1,14 +1,14 @@
 <?php
 require 'db.php';
-$customer_no = $_GET['customer_no'];
+$customer_id = $_GET['customer_id'];
 
 $stmt = $conn->prepare("
     SELECT COUNT(*) cnt FROM collections c 
     INNER JOIN loans l ON l.id = c.loan_id
     INNER JOIN customers cs ON cs.id = l.customer_id
-    WHERE cs.customer_no = ? AND c.flag = 0
+    WHERE cs.id = ? AND c.flag = 0
 ");
-$stmt->bind_param("s", $customer_no);
+$stmt->bind_param("s", $customer_id);
 $stmt->execute();
 $result = $stmt->get_result();
 $row = $result->fetch_assoc();
@@ -28,9 +28,9 @@ $stmt = $conn->prepare("
     FROM loans l
     JOIN customers ON customers.id = l.customer_id
     LEFT JOIN(SELECT loan_id , SUM(amount) collected FROM collections where head = 'EMI' GROUP BY loan_id) c ON c.loan_id = l.id
-    WHERE customers.customer_no = ? and l.status = 'Open'
+    WHERE customers.id = ? and l.status = 'Open' AND l.loan_type = ?
 ");
-$stmt->bind_param("s", $customer_no);
+$stmt->bind_param("ss", $customer_id, $_SESSION['line']);
 $stmt->execute();
 $result = $stmt->get_result();
 

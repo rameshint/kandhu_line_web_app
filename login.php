@@ -24,6 +24,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 $_SESSION['username'] = $user['username'];
                 $_SESSION['user_id'] = $user['id'];
                 $_SESSION['role'] = $user['role'];
+                $_SESSION['line'] = $user['line'];
                 if($user['role'] =='agent'){
                     $_SESSION['home_page'] = 'collections.php';
                     header("Location: collections.php");

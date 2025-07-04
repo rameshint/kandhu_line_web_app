@@ -1,8 +1,14 @@
 <?php
 $title = 'Collections';
 include('header.php');
-include_once'utility.php';
-$running_date = getBusinessDate();
+include_once 'utility.php';
+$line = $_SESSION['line'];
+if($line == 'Daily'){
+    $running_date = getBusinessDate();
+}else{
+    $date_obj = new DateTime();
+    $running_date = $date_obj->format('Y-m-d');
+}
 
 ?>
 <div class="row">
@@ -16,38 +22,39 @@ $running_date = getBusinessDate();
             <div class="card-body">
                 <div class="row">
                     <?php
-                    if($running_date > date("Y-m-d")){
+                    if ($running_date > date("Y-m-d")) {
                         echo '<div class="alert alert-danger">Day closure has been done for the day.</div>';
-                    }else{
+                    } else {
                     ?>
-                    <div class="row">
-                        <div class="col-md-5">
-                            <label>Select Date</label>
-                            <input type="date" class="form-control" name="collection_date" id="collection_date" readonly value="<?php echo $running_date ?>">
+                        <div class="row">
+                            <div class="col-md-5">
+                                <label>Select Date</label>
+                                <input type="date" class="form-control" name="collection_date" id="collection_date" <?=$line=='Daily'?'readonly':''?> value="<?php echo $running_date ?>">
+                            </div>
+                            <div class="col-md-5">
+                                <label>Select Agent</label>
+                                <select id="agent_id" class="form-select" required>
+                                    <option value="">Select Agent</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <br />
+                                <button class="btn btn-primary" id="agent_search">Search</button>
+                            </div>
                         </div>
-                        <div class="col-md-5">
-                            <label>Select Agent</label>
-                            <select id="agent_id" class="form-select" required>
-                                <option value="">Select Agent</option>
-                            </select>
+                        <div class="mb-2">
+                            <label>Enter Customer No</label>
+                            <input type="text" id="customer_no" class="form-control" placeholder="Enter customer no">
                         </div>
-                        <div class="col-md-2">
-                            <br />
-                            <button class="btn btn-primary" id="agent_search">Search</button>
-                        </div>
-                    </div>
-                    <div class="mb-2">
-                        <label>Enter Customer No</label>
-                        <input type="text" id="customer_no" class="form-control" placeholder="Enter customer no">
-                    </div>
-                    <div id="customerDetails" class="mb-3"></div>
-                    <form id="collectionForm">
-                        <div id="loanList"></div>
-                    </form>
+                        <div id="customerDetails" class="mb-3"></div>
+                        <form id="collectionForm">
+                            <div id="loanList"></div>
+                        </form>
                     <?php
                     }
                     ?>
                 </div>
+
             </div>
 
         </div>
@@ -95,7 +102,7 @@ include('footer.php');
                 $('#customerDetails').html('<div class="alert alert-danger">Customer not found</div>');
                 $('#loanList').empty()
             } else {
-                const c = result.customer; 
+                const c = result.customer;
                 $('#customerDetails').html(`
                                         <table class="table table-sm">
                                             <tr><th>Name</th><td>${c.name}</td></tr>
@@ -103,47 +110,51 @@ include('footer.php');
                                             <tr><th>District</th><td>${c.district}</td></tr>
                                         </table>
                                     `);
-                                    $.get('fetch_loans_by_customer.php?customer_no=' + customerNo, function(data) {
-            const result = JSON.parse(data);
-            
-            if(result.status == 'success'){
-                loans = result.loans;
-                if (loans.length === 0) {
-                
-                    $('#loanList').html('<div class="alert alert-danger">No loans found for this customer.</div>');
-                } else {
-                    let html = '<table class="table table-sm">';
-                    html += '<tr><th>Loan Date</th><th>Type of Loan</th><th>Amount</th><th>Balance</th><th>EMI</th><th>Interest</th></tr>';
-                    loans.forEach(loan => {
-                        let overdue = ''
-                        if(loan.overdue){
-                            overdue = 'table-danger'
+                $.get('fetch_loans_by_customer.php?customer_id=' + c.id, function(data) {
+                    const result = JSON.parse(data);
+
+                    if (result.status == 'success') {
+                        loans = result.loans;
+                        if (loans.length === 0) {
+                            $('#loanList').html('<div class="alert alert-danger">No loans found for this customer.</div>');
+                        } else {
+                            let html = '<table class="table table-sm">';
+                            let overdue = ''
+                            html += '<tr><th>Loan Date</th><th>Type of Loan</th><th>Amount</th><th>Balance</th><th>EMI</th><th>Interest</th></tr>';
+                            loans.forEach(loan => {
+
+                                if (loan.overdue) {
+                                    overdue = 'table-danger'
+                                }
+
+                                html += `
+                                <tr class="${overdue}">
+                                    <td style="white-space: nowrap;">${loan.loan_date}<input type="hidden" name="loan_id[]" value="${loan.id}"></td>
+                                    <td>${loan.loan_type}</td>
+                                    <td align=right>${formatAmount(loan.amount)}</td>
+                                    <td align=right>${formatAmount(loan.balance)}</td>
+                                    <td><input type="number" name="amount[]" max="${parseFloat(loan.balance)}" class="form-control"></td>
+                                    <td><input type="number" name="interest[]" class="form-control"></td>
+                                </tr>`;
+                            });
+                            html += '</table><button class="btn btn-primary mt-2" type="submit">Submit Collections</button>';
+                            if (overdue != '') {
+                                html += '<div class="col-md-1" style="float:right">                         <span class="badge text-bg-danger">Overdue</span>                        </div>'
+                            }
+                            $('#loanList').html(html);
+                            $("#loanList table input[name='amount[]']").first().focus()
+
                         }
+                    } else {
+                        $('#loanList').html(`<div class="alert alert-danger">${result.message}</div>`);
+                    }
 
-                        html += `
-                        <tr class="${overdue}">
-                            <td style="white-space: nowrap;">${loan.loan_date}<input type="hidden" name="loan_id[]" value="${loan.id}"></td>
-                            <td>${loan.loan_type}</td>
-                            <td align=right>${formatAmount(loan.amount)}</td>
-                            <td align=right>${formatAmount(loan.balance)}</td>
-                            <td><input type="number" name="amount[]" max="${parseFloat(loan.balance)}" class="form-control"></td>
-                            <td><input type="number" name="interest[]" class="form-control"></td>
-                        </tr>`;
-                    });
-                    html += '</table><button class="btn btn-primary mt-2" type="submit">Submit Collections</button>';
-                    $('#loanList').html(html);
-                    $("#loanList table input[name='amount[]']").first().focus()
-                }
-            }else{
-                $('#loanList').html(`<div class="alert alert-danger">${result.message}</div>`);
-            }
-            
-        });
-                
+                });
+
             }
         });
 
-        
+
     }
 
 
@@ -196,8 +207,8 @@ include('footer.php');
                 id
             }, function(res) {
                 const r = JSON.parse(res);
-                if (r.status === 'success') 
-                    $("#agent_id").trigger('change');
+                if (r.status === 'success')
+                    loadTodaysCollections()
             });
         }
     }

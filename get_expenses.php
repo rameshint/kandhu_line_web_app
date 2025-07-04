@@ -4,6 +4,7 @@ require 'db.php';
 $sql = "SELECT e.*, a.name AS agent_name 
         FROM expenses e 
         LEFT JOIN agents a ON a.id = e.agent_id 
+        where e.line = '".$_SESSION['line']."'
         ORDER BY e.expense_date DESC";
 
 $result = $conn->query($sql);
