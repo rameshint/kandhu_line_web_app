@@ -53,7 +53,7 @@
   background-position:center;
   ">
     <div class="login-box">
-      <div class="login-logo">
+      <div class="login-logo" style="    background-color: rgba(0, 0, 0, 0.3);    border-radius: 6.3px;   margin-bottom:0px">
         <a href="#" style="color: #FFF; font-weight: 400; text-shadow:1px 1px #666">Dhanalakshmi </a>
       </div>
       <!-- /.login-logo -->
