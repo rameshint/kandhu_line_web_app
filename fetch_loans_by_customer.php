@@ -3,6 +3,26 @@ require 'db.php';
 $customer_no = $_GET['customer_no'];
 
 $stmt = $conn->prepare("
+    SELECT COUNT(*) cnt FROM collections c 
+    INNER JOIN loans l ON l.id = c.loan_id
+    INNER JOIN customers cs ON cs.id = l.customer_id
+    WHERE cs.customer_no = ? AND c.flag = 0
+");
+$stmt->bind_param("s", $customer_no);
+$stmt->execute();
+$result = $stmt->get_result();
+$row = $result->fetch_assoc();
+if ($row['cnt'] > 0){
+    
+    // Send JSON error message
+    echo json_encode([
+        "error" => "Error",
+        "message" => "Amount already entered."
+    ]);
+    exit;
+}
+
+$stmt = $conn->prepare("
     SELECT l.id,l.loan_date,l.loan_type, l.amount, l.amount - IFNULL(c.collected,0) balance, 
     case when l.expiry_date IS NOT NULL and l.status = 'Open' then if(l.expiry_date<CURRENT_DATE,1,0) ELSE 0 END overdue
     FROM loans l
@@ -18,4 +38,5 @@ $loans = [];
 while ($row = $result->fetch_assoc()) {
     $loans[] = $row;
 }
-echo json_encode($loans);
+ 
+echo json_encode(['status' => 'success', 'loans' => $loans]);

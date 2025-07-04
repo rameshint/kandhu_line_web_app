@@ -270,7 +270,8 @@ include('footer.php');
                     status = '<span class="badge text-bg-secondary">Closed</span>'
                 }
 				
-				balance += l.balance
+                if (parseFloat(l.balance) > 0)
+				    balance += parseFloat(l.balance)
 
                 expiry_date = ''
                 if (l.expiry_date == null) {
@@ -305,7 +306,7 @@ include('footer.php');
                             </td>
                         </tr>`;
             });
-
+             
             if (balance > 0 ) {
                 $("#add-new-loan").prop("disabled", true)
             } else {

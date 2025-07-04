@@ -64,12 +64,12 @@ $running_date = getBusinessDate();
                     <table class="table table-bordered">
                         <thead>
                             <tr>
-                                <th>Customer No</th>
+                                <th width="10%">Cus. No</th>
                                 <th>Name</th>
-                                <th>Date</th>
-                                <th>Head</th>
-                                <th>Amount</th>
-                                <th>Actions</th>
+                                <th width="20%">Date</th>
+                                <th width="10%">Head</th>
+                                <th width="15%">Amount</th>
+                                <th width="10%">Actions</th>
                             </tr>
                         </thead>
                         <tbody id="todayCollections"></tbody>
@@ -93,7 +93,7 @@ include('footer.php');
             const result = JSON.parse(data);
             if (result.status === 'error') {
                 $('#customerDetails').html('<div class="alert alert-danger">Customer not found</div>');
-                  
+                $('#loanList').empty()
             } else {
                 const c = result.customer; 
                 $('#customerDetails').html(`
@@ -103,51 +103,59 @@ include('footer.php');
                                             <tr><th>District</th><td>${c.district}</td></tr>
                                         </table>
                                     `);
+                                    $.get('fetch_loans_by_customer.php?customer_no=' + customerNo, function(data) {
+            const result = JSON.parse(data);
+            
+            if(result.status == 'success'){
+                loans = result.loans;
+                if (loans.length === 0) {
+                
+                    $('#loanList').html('<div class="alert alert-danger">No loans found for this customer.</div>');
+                } else {
+                    let html = '<table class="table table-sm">';
+                    html += '<tr><th>Loan Date</th><th>Type of Loan</th><th>Amount</th><th>Balance</th><th>EMI</th><th>Interest</th></tr>';
+                    loans.forEach(loan => {
+                        let overdue = ''
+                        if(loan.overdue){
+                            overdue = 'table-danger'
+                        }
+
+                        html += `
+                        <tr class="${overdue}">
+                            <td style="white-space: nowrap;">${loan.loan_date}<input type="hidden" name="loan_id[]" value="${loan.id}"></td>
+                            <td>${loan.loan_type}</td>
+                            <td align=right>${formatAmount(loan.amount)}</td>
+                            <td align=right>${formatAmount(loan.balance)}</td>
+                            <td><input type="number" name="amount[]" max="${parseFloat(loan.balance)}" class="form-control"></td>
+                            <td><input type="number" name="interest[]" class="form-control"></td>
+                        </tr>`;
+                    });
+                    html += '</table><button class="btn btn-primary mt-2" type="submit">Submit Collections</button>';
+                    $('#loanList').html(html);
+                    $("#loanList table input[name='amount[]']").first().focus()
+                }
+            }else{
+                $('#loanList').html(`<div class="alert alert-danger">${result.message}</div>`);
+            }
+            
+        });
                 
             }
         });
 
-        $.get('fetch_loans_by_customer.php?customer_no=' + customerNo, function(data) {
-            const loans = JSON.parse(data);
-            if (loans.length === 0) {
-                
-                $('#loanList').html('<p class="text-danger">No loans found for this customer.</p>');
-            } else {
-                let html = '<table class="table table-sm">';
-                html += '<tr><th>Loan Date</th><th>Type of Loan</th><th>Amount</th><th>Balance</th><th>EMI</th><th>Interest</th></tr>';
-                loans.forEach(loan => {
-                    let overdue = ''
-                    if(loan.overdue){
-                        overdue = 'table-danger'
-                    }
-
-                    html += `
-                    <tr class="${overdue}">
-                        <td style="white-space: nowrap;">${loan.loan_date}<input type="hidden" name="loan_id[]" value="${loan.id}"></td>
-                        <td>${loan.loan_type}</td>
-                        <td align=right>${formatAmount(loan.amount)}</td>
-                        <td align=right>${formatAmount(loan.balance)}</td>
-                        <td><input type="number" name="amount[]" class="form-control"></td>
-                        <td><input type="number" name="interest[]" class="form-control"></td>
-                    </tr>`;
-                });
-                html += '</table><button class="btn btn-primary mt-2" type="submit">Submit Collections</button>';
-                $('#loanList').html(html);
-                $("#loanList table input[name='amount[]']").first().focus()
-            }
-        });
+        
     }
 
 
-    function loadTodaysCollections(agentId) {
-        if (!agentId) {
+    function loadTodaysCollections() {
+        /*if (!agentId) {
             $('#todayCollections').empty();
             return;
-        }
+        }*/
 
         collection_date = $("#collection_date").val()
 
-        $.get('get_todays_collections.php?agent_id=' + agentId + '&collection_date=' + collection_date, function(data) {
+        $.get('get_todays_collections.php?collection_date=' + collection_date, function(data) {
             const rows = JSON.parse(data);
             let html = '';
             total_collected_amount = 0
@@ -199,6 +207,8 @@ include('footer.php');
 
         loadAgentsDropdown();
 
+        loadTodaysCollections();
+
         $("#agent_search").on('click', function() {
             $("#agent_id").trigger('change');
         })
@@ -211,7 +221,7 @@ include('footer.php');
                 $('#customer_no').val('').prop('disabled', true);
                 $('#loanList').empty();
             }
-            loadTodaysCollections(agentId);
+            //loadTodaysCollections(agentId);
             $("#customer_no").focus();
         });
 
@@ -246,7 +256,8 @@ include('footer.php');
                     $('#collectionForm')[0].reset();
                     $('#loanList').empty();
                     $('#customer_no').val('');
-                    loadTodaysCollections(agentId);
+                    //loadTodaysCollections(agentId);
+                    loadTodaysCollections();
                     $("#customer_no").focus();
                     $('#customerDetails').empty();
                 } else {
