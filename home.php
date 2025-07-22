@@ -230,7 +230,7 @@ include_once 'footer.php';
           <td>${loan.customer_no}</td>
           <td>${loan.name}</td>
           <td>${loan.loan_type}</td>
-          <td>${loan.loan_date}</td>
+          <td>${formatDate(loan.loan_date)}</td>
           <td align=right>${formatAmount(loan.amount)}</td>
           <td align=center>${loan.pending_emi}</td>
           <td align=right>${formatAmount(loan.to_be_paid - loan.collected)}</td>
