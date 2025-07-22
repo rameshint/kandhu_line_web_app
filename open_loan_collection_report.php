@@ -96,11 +96,11 @@ if ($_GET['customer_no'] != '') {
                                 <th>Name</th>
                                 <td><?= $loan['name'] ?></td>
                                 <th>Loan Amount</th>
-                                <td><?= $loan['amount'] ?></td>
+                                <td><?= formatToIndianCurrency($loan['amount']) ?></td>
                                 <th>Opening Date</th>
-                                <td><?= $loan['loan_date'] ?></td>
+                                <td><?= formatDate($loan['loan_date']) ?></td>
                                 <th>End Date</th>
-                                <td><?= $loan['expiry_date'] ?></td>
+                                <td><?= formatDate($loan['expiry_date']) ?></td>
                             </tr>
                         </table>
 
@@ -154,7 +154,7 @@ if ($_GET['customer_no'] != '') {
                                         ?>
                                             <tr>
                                                 <td style="text-align:center"><?php
-                                                                                echo $opening_date->format('d-m-Y');
+                                                                                echo formatDate($opening_date->format('d-m-Y'   ));
                                                                                 ?></td>
                                                 <td align="center"><?php
                                                                     if ($loan['loan_type'] == 'Daily') {
@@ -197,7 +197,7 @@ if ($_GET['customer_no'] != '') {
                                             <tr>
                                                 <td style="text-align:center"><?php
                                                                                 $collection_date = new DateTime($collection_date);
-                                                                                echo $collection_date->format('d-m-Y');
+                                                                                echo formatDate($collection_date->format('d-m-Y'));
                                                                                 ?></td>
                                                 <td align="center"><?= $amount ?></td>
                                             </tr>

@@ -1,7 +1,7 @@
 <?php
 require 'db.php';
 $customer_id = $_GET['customer_id'];
-$res = $conn->query("SELECT l.* , ifnull(c.bills,0) bills,l.amount - collected balance, case 
+$res = $conn->query("SELECT l.* , ifnull(c.bills,0) bills,l.amount - ifnull(collected,0) balance, case 
 	when loan_type = 'Daily' then CONCAT(TIMESTAMPDIFF(DAY, l.loan_date, IFNULL(loan_closed,CURRENT_DATE))  , ' Days')
 	when loan_type = 'Weekly' then concat(TIMESTAMPDIFF(WEEK, l.loan_date, IFNULL(loan_closed,CURRENT_DATE)), ' Weeks')
 	when loan_type = 'Monthly' then concat(TIMESTAMPDIFF(MONTH, l.loan_date, IFNULL(loan_closed,CURRENT_DATE)), ' Months')

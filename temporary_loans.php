@@ -29,16 +29,16 @@ if($line == 'Daily'){
             <!-- Add Investment -->
             <form method="POST" action="save_temporary_loans.php" class="row g-2 mb-4">
               <div class="col-md-3">
-                <input type="text" name="source_name" class="form-control" placeholder="Source Name" required>
+                <input type="text" name="source_name" class="form-control" placeholder="Enter finance name" required>
               </div>
               <div class="col-md-2">
                 <input type="date" name="borrow_date" class="form-control" <?=$line=='Daily'?'readonly':''?>   required value="<?= $running_date ?>">
               </div>
               <div class="col-md-2">
-                <input type="number" name="amount" class="form-control" placeholder="Amount" step="0.01" required>
+                <input type="number" name="amount" class="form-control" placeholder="Enter the Amount" step="0.01" required>
               </div>
               <div class="col-md-3">
-                <input type="text" name="remarks" class="form-control" placeholder="Remarks">
+                <input type="text" name="remarks" class="form-control" placeholder="Enter Description">
               </div>
               <div class="col-md-2">
                 <button type="submit" class="btn btn-primary w-100">Add</button>
@@ -50,7 +50,7 @@ if($line == 'Daily'){
 
 
           <!-- Investment Table -->
-          <table class="table table-bordered">
+          <table class="table table-bordered table-sm table-striped">
             <thead>
               <tr>
                 <th>Source</th>
@@ -77,13 +77,13 @@ if($line == 'Daily'){
                 $balance = $row['amount'] - $row['repaid_amount'];
                 echo "<tr>
                         <td>{$row['source_name']}</td>
-                        <td>{$row['borrow_date']}</td>
-                        <td align=right>" . formatToIndianCurrency($row['amount']) . "</td>
-                        <td align=right>" . formatToIndianCurrency($row['repaid_amount']) . "</td>
+                        <td>".formatDate($row['borrow_date'])."</td>
+                        <td>" . formatToIndianCurrency($row['amount']) . "</td>
+                        <td>" . formatToIndianCurrency($row['repaid_amount']) . "</td>
                         <td>{$row['repay_date']}</td>
-                        <td align=right>" . formatToIndianCurrency($row['unclear_repaid_amount']) . "</td>
-                        <td align=right>" . formatToIndianCurrency($row['interest_paid']) . "</td>
-                        <td align=right>" . formatToIndianCurrency($balance) . "</td>
+                        <td>" . formatToIndianCurrency($row['unclear_repaid_amount']) . "</td>
+                        <td>" . formatToIndianCurrency($row['interest_paid']) . "</td>
+                        <td>" . formatToIndianCurrency($balance) . "</td>
                         <td>{$row['remarks']}</td>
                         <td>";
                 if ($row['flag'] == 0) {

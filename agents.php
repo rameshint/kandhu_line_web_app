@@ -14,7 +14,7 @@ include 'header.php';
 
                     <button class="btn btn-primary mb-3" onclick="showAgentModal()">Add Agent</button>
 
-                    <table class="table table-bordered table-striped" id="agentTable">
+                    <table class="table table-striped" id="agentTable">
                         <thead>
                             <tr>
                                 <th>Name</th>

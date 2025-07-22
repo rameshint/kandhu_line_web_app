@@ -50,17 +50,14 @@ $result = $conn->query($sql);
                         </div>
                     </div>
                 </form>
-
                 <div style="width: 100%;">
                     <button onclick="printTable()" class="btn btn-secondary" style="position:relative; float: right;">
                         <i class="bi bi-printer"></i> Print
                     </button>
                     <br />
                 </div>
-
-
                 <div id="printSection">
-                    DATE : <b><?= date("d-m-Y") ?></b>
+                    DATE : <b><?= formatDate(getBusinessDate()) ?></b>
 					<style>
 					.table > :not(caption) > * > * {
 						padding: 0px !important;

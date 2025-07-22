@@ -3,9 +3,9 @@ $title = 'Collections';
 include('header.php');
 include_once 'utility.php';
 $line = $_SESSION['line'];
-if($line == 'Daily'){
+if ($line == 'Daily') {
     $running_date = getBusinessDate();
-}else{
+} else {
     $date_obj = new DateTime();
     $running_date = $date_obj->format('Y-m-d');
 }
@@ -29,7 +29,7 @@ if($line == 'Daily'){
                         <div class="row">
                             <div class="col-md-6">
                                 <label class="form-label">Select Date</label>
-                                <input type="date" class="form-control" name="collection_date" id="collection_date" <?=$line=='Daily'?'readonly':''?> value="<?php echo $running_date ?>">
+                                <input type="date" class="form-control" name="collection_date" id="collection_date" <?= $line == 'Daily' ? 'readonly' : '' ?> value="<?php echo $running_date ?>">
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label">Select Agent</label>
@@ -120,7 +120,7 @@ include('footer.php');
                         } else {
                             let html = '<table class="table table-sm">';
                             let overdue = ''
-                            html += '<tr><th>Loan Date</th><th>Type of Loan</th><th>Amount</th><th>Balance</th><th>EMI</th><th>Interest</th></tr>';
+                            html += '<tr><th>Start Date</th><th>End Date</th><th>Type of Loan</th><th>Amount</th><th>Balance</th><th>EMI</th><th>Interest</th></tr>';
                             loans.forEach(loan => {
 
                                 if (loan.overdue) {
@@ -129,7 +129,8 @@ include('footer.php');
 
                                 html += `
                                 <tr class="${overdue}">
-                                    <td style="white-space: nowrap;">${loan.loan_date}<input type="hidden" name="loan_id[]" value="${loan.id}"></td>
+                                    <td style="white-space: nowrap;">${formatDate(loan.loan_date)}<input type="hidden" name="loan_id[]" value="${loan.id}"></td>
+                                    <td style="white-space: nowrap;">${formatDate(loan.expiry_date)}</td>
                                     <td>${loan.loan_type}</td>
                                     <td align=right>${formatAmount(loan.amount)}</td>
                                     <td align=right>${formatAmount(loan.balance)}</td>
@@ -175,7 +176,7 @@ include('footer.php');
                 html += `<tr>
                         <td>${row.customer_no}</td>
                         <td>${row.customer_name}</td>
-                        <td>${row.collection_date}</td>
+                        <td>${formatDate(row.collection_date)}</td>
                         <td>${row.head}</td>
                         <td align=right>${formatAmount(row.amount)}</td>
                         <td><button class="btn btn-sm btn-danger" onclick="deleteCollection(${row.id})">Delete</button></td>
@@ -198,6 +199,15 @@ include('footer.php');
                 options += `<option value="${agent.id}">${agent.name}</option>`;
             });
             $('#agent_id').html(options);
+            let agentId = sessionStorage.getItem('agent_id') || '';
+            
+            // If agentId is not set, disable customer_no input
+            if (agentId) {
+                $('#agent_id').val(agentId);
+                $('#customer_no').prop('disabled', false);
+            } else {
+                $('#customer_no').prop('disabled', true);
+            }
         });
     }
 
@@ -218,6 +228,7 @@ include('footer.php');
 
         loadAgentsDropdown();
 
+
         loadTodaysCollections();
 
         $("#agent_search").on('click', function() {
@@ -225,9 +236,11 @@ include('footer.php');
         })
 
         $('#agent_id').on('change', function() {
-            const agentId = $(this).val();
+            // store agent id in cache and get the agent id from cache and set the agent id after refresh   
+            sessionStorage.setItem('agent_id', $(this).val());
             if (agentId) {
                 $('#customer_no').prop('disabled', false);
+
             } else {
                 $('#customer_no').val('').prop('disabled', true);
                 $('#loanList').empty();

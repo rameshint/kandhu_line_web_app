@@ -8,15 +8,15 @@ include('header.php');
         <div class="col-12">
             <div class="card card-outline">
                 <div class="card-header">
-                    <h3 class="card-title">Customers</h3>
+                    <h3 class="card-title">Customer Management</h3>
                 </div>
                 <div class="card-body">
-                    <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#customerModal" onclick="resetForm()">Add New Customer</button>
+                    <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#customerModal" onclick="resetForm()"><i class='bi bi-plus-circle'></i> Add New Customer</button>
 
                     <table id="customerTable" class=" table table-striped">
                         <thead>
                             <tr>
-                                <th width="10%">Cust. No</th>
+                                <th width="5%">Cust. No</th>
                                 <th>Name</th>
                                 <th>Address Line 1</th>
                                 <th>Contact No</th>
@@ -47,39 +47,39 @@ include('header.php');
                     <input type="hidden" id="customer_id" name="id">
                     <div class="col-md-2">
                         <label class="form-label">Customer No *</label>
-                        <input type="text" class="form-control" name="customer_no" id="customer_no" required>
+                        <input type="text" class="form-control" name="customer_no" id="customer_no" required placeholder="Enter Customer No">
                     </div>
                     <div class="col-md-10">
                         <label class="form-label">Name *</label>
-                        <input type="text" class="form-control" name="name" required>
+                        <input type="text" class="form-control" name="name" required placeholder="Enter Customer Name">
                     </div>
                     <div class="col-md-6">
                         <label class="form-label">Contact No *</label>
-                        <input id="phoneMask" name="contact_no" type="text" class="form-control" required>
+                        <input id="phoneMask" name="contact_no" type="text" class="form-control" minlength="10" maxlength="10" required placeholder="Enter Contact No">
                     </div>
                     <div class="col-md-6">
                         <label class="form-label">Secondary Contact No</label>
-                        <input id="phoneMask" name="secondary_contact_no" type="text" class="form-control" >
+                        <input id="phoneMask" name="secondary_contact_no" type="text" minlength="10" maxlength="10" class="form-control" placeholder="Enter Secondary Contact No">
                     </div>
                     <div class="col-md-12">
                         <label class="form-label">Address Line 1 *</label>
-                        <input type="text" class="form-control" name="address_line1" required>
+                        <input type="text" class="form-control" name="address_line1" required placeholder="Enter Address Line 1">
                     </div>
                     <div class="col-md-12">
                         <label class="form-label">Address Line 2</label>
-                        <input type="text" class="form-control" name="address_line2">
+                        <input type="text" class="form-control" name="address_line2" placeholder="Enter Address Line 2">
                     </div>
                     <div class="col-md-6">
                         <label class="form-label">District *</label>
-                        <input type="text" class="form-control" name="district" required>
+                        <input type="text" class="form-control" name="district" required placeholder="Enter District">
                     </div>
                     <div class="col-md-3">
                         <label class="form-label">Pincode *</label>
-                        <input type="text" class="form-control" name="pincode" required>
+                        <input type="text" class="form-control" name="pincode" minlength="6" maxlength="6" required placeholder="Enter Pincode">
                     </div>
                     <div class="col-md-3">
                         <label class="form-label">Aadhar Card</label>
-                        <input type="text" class="form-control" name="aadharcard">
+                        <input type="text" class="form-control" minlength="16" maxlength="16" name="aadharcard" placeholder="Enter Aadhar Card Number">
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -134,8 +134,8 @@ include('footer.php');
                 <td>${c.secondary_contact_no}</td>
                 <td>${c.district}</td>
                 <td style="white-space: nowrap;">
-                    <button class='btn btn-sm btn-primary' onclick='editCustomer(${JSON.stringify(c)})'>Edit</button>
-                    <button class='btn btn-sm btn-success' onclick='newCustomer(${JSON.stringify(c)})'>Create New</button>
+                    <button class='btn btn-sm btn-warning' onclick='editCustomer(${JSON.stringify(c)})'>Edit</button>
+                    <button class='btn btn-sm btn-primary' onclick='newCustomer(${JSON.stringify(c)})'>Create New</button>
                 </td>
             </tr>`;
             });

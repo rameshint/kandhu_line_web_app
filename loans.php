@@ -32,13 +32,13 @@ if($loan_type=='Daily'){
         <div class="col-12">
             <div class="card card-outline">
                 <div class="card-header">
-                    <h3 class="card-title">Loans</h3>
+                    <h3 class="card-title">Loan Management</h3>
                 </div>
                 <div class="card-body">
                     <div class="mb-3 row">
                         <div class="col-md-4">
                             <label for="customerNo" class="form-label">Enter Customer No</label>
-                            <input type="text" id="customerNo" class="form-control" placeholder="Customer No">
+                            <input type="text" id="customerNo" class="form-control" placeholder="Enter customer no">
                         </div>
                         <div class="col-md-2 d-flex align-items-end">
                             <button class="btn btn-primary w-100" onclick="fetchCustomer()">Search</button>
@@ -51,12 +51,14 @@ if($loan_type=='Daily'){
                             <?php
                             if($running_date <= date("Y-m-d")){
                             ?>
-                            <button class="btn btn-primary mb-3 "  data-bs-toggle="modal" data-bs-target="#loanModal" id="add-new-loan" onclick="resetLoanForm()">Add New Loan</button>
+                            <button class="btn btn-primary mb-3 "  data-bs-toggle="modal" data-bs-target="#loanModal" id="add-new-loan" onclick="resetLoanForm()">
+                                <i class='bi bi-plus-circle'></i> Add New Loan
+                            </button>
                             <?php
                             }
                             ?>
 
-                            <table id="loanTable" class="table table-bordered  table-striped">
+                            <table id="loanTable" class="table table-striped ">
                                 <thead>
                                     <tr>
                                         <th>Opening Date</th>
@@ -100,7 +102,7 @@ if($loan_type=='Daily'){
                     </div>
                     <div class="col-md-6">
                         <label class="form-label ">Tenure *</label>
-                        <input type="number" class="form-control calculateLoanAmount calculateExpiryDate" name="tenure" id="tenure"  value="<?=$tenure?>" required max="100" min="1">
+                        <input type="number" placeholder="Enter tenure" class="form-control calculateLoanAmount calculateExpiryDate" name="tenure" id="tenure"  value="<?=$tenure?>" required max="100" min="1">
                     </div>
                     <div class="col-md-6">
                         <label class="form-label">Opening Date *</label>
@@ -112,15 +114,15 @@ if($loan_type=='Daily'){
                     </div>
                     <div class="col-md-6">
                         <label class="form-label">Amount *</label>
-                        <input type="number" class="form-control calculateLoanAmount" name="amount" id="total_amount" required>
+                        <input type="number" placeholder="Enter loan amount" class="form-control calculateLoanAmount" name="amount" id="total_amount" required>
                     </div>
                     <div class="col-md-6">
                         <label class="form-label">Interest *</label>
-                        <input type="number" class="form-control calculateLoanAmount" name="interest" id="loan_interest" required>
+                        <input type="number" placeholder="Enter total interest amount" class="form-control calculateLoanAmount" name="interest" id="loan_interest" required>
                     </div>
                     <div class="col-md-6">
                         <label class="form-label">File Charge *</label>
-                        <input type="number" class="form-control calculateLoanAmount" name="file_charge" id="loan_file_charge" required>
+                        <input type="number" placeholder="Enter file charge/atta kasu" class="form-control calculateLoanAmount" name="file_charge" id="loan_file_charge" required>
                     </div>
 
                     <div class="col-md-6">
@@ -198,11 +200,13 @@ include('footer.php');
                 $('#customerDetails').html(`
                                         <div class="row">
                                             <div class="col-md-6">
-                                                <table class="table table-sm table-striped">
-                                                    <tr><th width=20%>Customer No</th><td width=30%>${c.customer_no}</td><th width=20%>Name</th><td>${c.name}</td></tr>
-                                                    <tr><th>Address Line1</th><td>${c.address_line1}</td><th>Address Line1</th><td>${c.address_line2}</td></tr>
-                                                    <tr><th>Contact No</th><td>${c.contact_no}</td><th>Secondary Contact No</th><td>${c.secondary_contact_no}</td></tr>
+                                            <div class="alert alert-info">
+                                                <table class="">
+                                                    <tr><th width=10%>Name</th><td width=20%>${c.name}</td></tr>
+                                                    <tr><th width=10%>Contact No</th><td width=20%>${c.contact_no}</td></tr>
+                                                    <tr><th  width=10%>Address Line1</th><td>${c.address_line1}</td></tr>
                                                 </table>
+                                                </div>
                                             </div>
                                         </div>
                                     `);
@@ -260,7 +264,7 @@ include('footer.php');
                 editBtn = ''
                 deleteBtn = ''
                 if (l.flag == 0) {
-                    editBtn = `<button class="btn btn-sm btn-primary" onclick='editLoan(${JSON.stringify(l)})'>Edit</button>`
+                    editBtn = `<button class="btn btn-sm btn-warning" onclick='editLoan(${JSON.stringify(l)})'>Edit</button>`
 
 
                     if (l.bills == 0) {
@@ -289,12 +293,12 @@ include('footer.php');
                 if (l.loan_closed == null) {
                     loan_closed = ''
                 } else {
-                    loan_closed = l.loan_closed
+                    loan_closed = new Date(l.loan_closed).toLocaleDateString()
                 }
 
                 rows += `<tr >
-                            <td>${l.loan_date}</td>
-                            <td>${expiry_date}</td>
+                            <td>${new Date(l.loan_date).toLocaleDateString()}</td>
+                            <td>${new Date(expiry_date).toLocaleDateString()}</td>
                             <td>${loan_closed}</td>
                             <td>${l.days}</td>
                             <td>${formatAmount(l.amount)}</td>
@@ -326,12 +330,7 @@ include('footer.php');
             $('#loanTable').DataTable({
                 order: [
                     [0, 'desc']
-                ],
-                columnDefs: [{
-                    targets: [4, 5, 6], // target column
-                    className: "align-right",
-
-                }]
+                ]
             });
         });
     }
@@ -408,35 +407,46 @@ include('footer.php');
             if (loan.expiry_date == null) {
                 expiry_date = ''
             } else {
-                expiry_date = loan.expiry_date
+                expiry_date = new Date(loan.expiry_date).toLocaleDateString()
             }
 
             if (loan.loan_closed == null) {
                 loan_closed = ''
             } else {
-                loan_closed = loan.loan_closed
+                loan_closed = new Date(loan.loan_closed).toLocaleDateString()
             }
 
             let html = `
                 <table class="table table-bordered">
                     <tr><th>Type of Loan</th><td>${loan.loan_type}</td><th>Tenure</th><td>${loan.tenure}</td></tr> 
-                    <tr><th>Loan Date</th><td>${loan.loan_date}</td><th>End Date</th><td>${expiry_date}</td></tr> 
+                    <tr><th>Loan Date</th><td>${formatDate(loan.loan_date)}</td><th>End Date</th><td>${formatDate(loan.expiry_date)}</td></tr> 
                     <tr><th>Amount</th><td>${loan.amount}</td><th>Interest</th><td>${loan.interest}</td></tr>
                     <tr><th>File Charge</th><td>${loan.file_charge}</td><th>Status</th><td>${status}</td></tr>                    
-                    <tr><th>Closed On</th><td>${loan_closed}</td><th>Created On</th><td>${loan.created_on}</td></tr>
+                    <tr><th>Closed On</th><td>${formatDate(loan.loan_closed)}</td><th>Created On</th><td>${formatDate(loan.created_on)}</td></tr>
                     <tr><th>Agent</th><td>${loan.agent_name}</td></tr>
                 </table>
             `;
             if (collections.length > 0) {
-                html += `<h5>Collections</h5><table class="table table-bordered"><thead><tr><th>Date</th><th>Head</th><th>Amount</th></tr></thead><tbody>`
+                html += `<h5>Collections</h5>
+                <table class="table table-bordered table-sm"><thead><tr><th>Date</th><th>EMI</th><th>Interest</th></tr></thead><tbody>`
+                total_emi = 0
+                total_interest = 0
                 collections.forEach(collection => {
+                    
                     html += `<tr>
-                            <td>${collection.collection_date}</td>
-                            <td>${collection.head}</td>
-                            <td align=right>${formatAmount(collection.amount)}</td>
-                        </tr>`
+                            <td>${formatDate(collection.collection_date)}</td>`
+                    if (collection.head == 'EMI') {
+                        html += `<td align=right>${formatAmount(collection.amount)}</td><td align=right></td>`
+                        total_emi = total_emi + parseFloat( collection.amount)
+                    } else if (collection.head == 'Interest') {
+                        html += `<td align=right></td><td align=right>${formatAmount(collection.amount)}</td>`  
+                        total_interest = total_interest + parseFloat( collection.amount)
+                    }
+                    html += `</tr>`
                 });
-                html += `</tobdy></table>`
+                html += `</tobdy><tfoot>
+                    <tr><th>Collected</th><td width=20% align=right>${formatAmount(total_emi)}</td><td  width=20% align=right>${formatAmount( total_interest)}</td></tr>
+                </tfoot></table>`
             }
 
             $('#loanDetailsContent').html(html);

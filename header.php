@@ -59,8 +59,8 @@ if (!isset($_SESSION['username'])) {
     href="dist/css/jsvectormap.min.css"
     integrity="sha256-+uGLJmmTKOqBr+2E6KDYs/NRsHxSkONXFHUL0fy2O/4="
     crossorigin="anonymous" />
-  <link href="dist/css/jquery.dataTables.min.css" rel="stylesheet" />
-  <link rel="stylesheet" href="dist/css/fixedColumns.dataTables.min.css">
+  <link href="dist/css/dataTables.bootstrap5.css" rel="stylesheet" />
+  <link rel="stylesheet" href="dist/css/fixedColumns.bootstrap5.css">
   <style>
     @media print {
       .table-33 {

@@ -107,8 +107,8 @@ $result = $conn->query($sql);
                                     <td><?= htmlspecialchars($row['name']) ?></td>
                                     <td><?= htmlspecialchars($row['tenure']) ?></td>
                                     <td align="right"><?= number_format($row['emi'], 2) ?></td>
-                                    <td><?= $row['loan_date'] ?></td>
-                                    <td><?= $row['expiry_date'] ?></td>
+                                    <td><?= formatDate($row['loan_date']) ?></td>
+                                    <td><?= formatDate($row['expiry_date']) ?></td>
                                     <td align="right"><?= number_format($row['total_loan'], 2) ?></td>
                                     <td align="right"><?= number_format($row['total_paid'], 2) ?></td>
                                     <td align="right"><?= number_format($row['interest_amount'], 2) ?></td>

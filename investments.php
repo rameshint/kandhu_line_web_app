@@ -16,18 +16,18 @@ if($line == 'Daily'){
 
         <div class="card card-outline">
             <div class="card-header">
-                <h3 class="card-title">Expense Management</h3>
+                <h3 class="card-title">Investment Management</h3>
             </div>
             <div class="card-body">
 
                 <?php
                 if ($running_date <= date("Y-m-d")) {
                 ?>
-                    <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#investmentModal">Add Investment</button>
+                    <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#investmentModal"><i class="bi bi-plus-circle"></i> Add Investment</button>
                 <?php
                 }
                 ?>
-                <table class="table table-bordered table-striped" id="investmentTable">
+                <table class="table table-sm table-striped" id="investmentTable">
                     <thead>
                         <tr>
                             <th>Date</th>
@@ -60,21 +60,20 @@ if($line == 'Daily'){
                     <input type="date" value="<?= $running_date ?>" <?=$line=='Daily'?'readonly':''?>  name="investment_date" class="form-control" required>
                 </div>
                 <div class="col-md-6">
-                    <label for="">Source</label>
-                    <input type="text" name="source" class="form-control" required>
-                </div>
-                <div class="col-md-6">
-                    <label for="">Invester</label>
+                    <label for="">Select Investor </label>
                     <?php include 'agent_dropdown.php'; ?>
                 </div>
-
+                <div class="col-md-6">
+                    <label for="">Source</label>
+                    <input type="text" name="source" class="form-control" required placeholder="Enter source of investment">
+                </div>
                 <div class="col-md-6">
                     <label for="">Amount</label>
-                    <input type="number" step="0.01" name="amount" class="form-control" required>
+                    <input type="number" step="0.01" name="amount" class="form-control" required placeholder="Enter the Amount">
                 </div>
                 <div class="col-md-12">
                     <label for="">Description</label>
-                    <input type="text" name="description" class="form-control">
+                    <input type="text" name="description" class="form-control" placeholder="Enter Description">
                 </div>
             </div>
             <div class="modal-footer">
@@ -101,7 +100,7 @@ include_once 'footer.php';
                     actions = `<button class="btn btn-sm btn-danger" onclick="deleteInvestment(${r.id})">Delete</button>`
                 }
                 investmentTable.row.add([
-                    r.investment_date,
+                    formatDate(r.investment_date),
                     r.source,
                     r.description,
                     formatAmount(r.amount),

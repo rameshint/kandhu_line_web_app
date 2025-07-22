@@ -23,7 +23,7 @@ if ($row['cnt'] > 0){
 }
 
 $stmt = $conn->prepare("
-    SELECT l.id,l.loan_date,l.loan_type, l.amount, l.amount - IFNULL(c.collected,0) balance, 
+    SELECT l.id,l.loan_date,l.expiry_date ,l.loan_type, l.amount, l.amount - IFNULL(c.collected,0) balance, 
     case when l.expiry_date IS NOT NULL and l.status = 'Open' then if(l.expiry_date<CURRENT_DATE,1,0) ELSE 0 END overdue
     FROM loans l
     JOIN customers ON customers.id = l.customer_id

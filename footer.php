@@ -47,8 +47,10 @@
 <!--begin::Script-->
 <!--begin::Third Party Plugin(OverlayScrollbars)-->
 <script src="dist/js/jquery-3.7.1.min.js"></script>
-<script src="dist/js/jquery.dataTables.min.js"></script>
-<script src="dist/js/dataTables.fixedColumns.min.js"></script>
+<script src="dist/js/dataTables.js"></script>
+<script src="dist/js/dataTables.bootstrap5.js"></script>
+<script src="dist/js/dataTables.fixedColumns.js"></script>
+<script src="dist/js/fixedColumns.bootstrap5.js"></script>
 <script
   src="dist/js/overlayscrollbars.browser.es6.min.js"
   integrity="sha256-dghWARbRe2eLlIJ56wNB+b760ywulqK3DzZYEpsg2fQ="
@@ -105,10 +107,17 @@
 
   function formatAmount(amount){
     const formattedAmount = new Intl.NumberFormat('en-IN', {
-      minimumFractionDigits: 2,
+      minimumFractionDigits: 0,
       maximumFractionDigits: 2
     }).format(amount);
     return formattedAmount
+  }
+
+  function formatDate(dateString) {
+    if (!dateString) {
+      return '';
+    }
+    return new Date(dateString).toLocaleDateString('en-GB');
   }
 
   function switchLine(){

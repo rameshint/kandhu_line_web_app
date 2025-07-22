@@ -84,12 +84,12 @@ include('footer.php');
                     <td>${row.customer_no}</td>
                     <td>${row.name}</td>
                     <td>${row.agent}</td>
-                    <td>${row.amount}</td>
-                    <td>${row.interest}</td>
-                    <td>${row.file_charge}</td>
+                    <td>${formatAmount(row.amount)}</td>
+                    <td>${formatAmount(row.interest)}</td>
+                    <td>${formatAmount(row.file_charge)}</td>
                     <td>${row.loan_type}</td>
                     <td>${row.tenure}</td>
-                    <td>${row.loan_date}</td>
+                    <td>${formatDate(row.loan_date)}</td>
                 </tr>`;
             });
             $('#loans_table tbody').html(html);
@@ -102,10 +102,10 @@ include('footer.php');
                     <td>${row.name}</td>
                     <td>${row.agent}</td>
                     <td>${row.loan_type}</td>
-                    <td>${row.amount}</td>
+                    <td>${formatAmount(row.amount)}</td>
                     <td>${row.head}</td>
-                    <td>${row.collection_amount}</td>
-                    <td>${row.collection_date}</td>
+                    <td>${formatAmount(row.collection_amount)}</td>
+                    <td>${formatDate(row.collection_date)}</td>
                 </tr>`;
             });
             $('#collections_table tbody').html(html);

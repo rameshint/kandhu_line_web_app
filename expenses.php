@@ -24,7 +24,7 @@ if($line == 'Daily'){
                 <?php
                 if ($running_date <= date("Y-m-d")) {
                 ?>
-                    <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#expenseModal">Add Expense</button>
+                    <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#expenseModal"><i class="bi bi-plus-circle"></i> Add Expense</button>
                     <button class="btn btn-outline-primary mb-3" data-bs-toggle="modal" data-bs-target="#categoryModal">
                         <i class="bi bi-plus-circle"></i> Add Expense Category
                     </button>
@@ -33,7 +33,7 @@ if($line == 'Daily'){
                 ?>
 
 
-                <table class="table table-bordered table-striped" id="expenseTable">
+                <table class="table table-striped" id="expenseTable">
                     <thead>
                         <tr>
                             <th>Date</th>
@@ -78,11 +78,11 @@ if($line == 'Daily'){
                 </div>
                 <div class="col-md-6">
                     <label for="amount">Amount</label>
-                    <input type="number" step="0.01" name="amount" class="form-control" required>
+                    <input type="number" step="0.01" name="amount" class="form-control" required placeholder="Enter Amount">
                 </div>
                 <div class="col-md-12">
                     <label for="description">Description</label>
-                    <input type="text" name="description" class="form-control">
+                    <input type="text" name="description" class="form-control" placeholder="Enter Description">
                 </div>
 
             </div>
@@ -106,7 +106,7 @@ if($line == 'Daily'){
 
                     <div class="mb-3">
                         <label for="newCategory" class="form-label">New Category Name</label>
-                        <input type="text" class="form-control" id="newCategory" required>
+                        <input type="text" class="form-control" id="newCategory" required placeholder="Enter Category">
                     </div>
                     <button type="submit" class="btn btn-primary mb-3">Add Category</button>
 
@@ -140,7 +140,7 @@ include_once 'footer.php';
                 }
 
                 expenseTable.row.add([
-                    r.expense_date,
+                    formatDate(r.expense_date),
                     r.category,
                     r.description,
                     formatAmount(r.amount),
@@ -181,12 +181,7 @@ include_once 'footer.php';
         expenseTable = $('#expenseTable').DataTable({
             order: [
                 [0, 'desc']
-            ],
-            columnDefs: [{
-                targets: [3], // target column
-                className: "align-right",
-
-            }]
+            ]
         });
         loadExpenses();
         loadCategories();

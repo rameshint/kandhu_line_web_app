@@ -150,8 +150,8 @@ if ($start_date < $end_date) {
                                         <td><?= $loan['customer_no'] ?></td>
                                         <td style="white-space: nowrap"><?= $loan['name'] ?></td>
                                         <td><?= $loan['amount'] ?></td>
-                                        <td style="white-space: nowrap"><?= $loan_date_obj->format('d-m-Y') ?></td>
-                                        <td style="white-space: nowrap"><?= $expiry_date_obj->format('d-m-Y') ?></td>
+                                        <td style="white-space: nowrap"><?= formatDate($loan_date_obj->format('d-m-Y')) ?></td>
+                                        <td style="white-space: nowrap"><?= formatDate($expiry_date_obj->format('d-m-Y')) ?></td>
                                         <td style="white-space: nowrap"><?= $loan['status'] ?></td>
                                         <?php
                                         $start = clone $start_date;

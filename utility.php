@@ -20,6 +20,13 @@ function formatToIndianCurrency($amount) {
     return  $formatted . "." . $decimalPart;
 }
 
+function formatDate($dateString) {
+    if (!$dateString) {
+        return '';
+    }
+    return (new DateTime($dateString))->format('d/m/Y');
+}
+
 
 function getBusinessDate(){
     global $conn;

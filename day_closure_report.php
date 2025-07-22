@@ -12,7 +12,7 @@ include('header.php');
             </div>
             <div class="card-body">
                 <div class="row">
-                    <table class="table table-bordered table-striped" id="summaryTable">
+                    <table class="table table-striped" id="summaryTable">
                         <thead>
                             <tr>
                                 <th>Date</th>
@@ -64,7 +64,7 @@ include('footer.php');
             summaryTable.clear();
             summaries.forEach(r => {
                 summaryTable.row.add([
-                    r.created_on,
+                    formatDate(r.created_on),
                     formatAmount(r.total_loans),
                     formatAmount(r.total_collections),
                     formatAmount(r.total_investments),
