@@ -78,7 +78,7 @@ $result = $conn->query($sql);
                 <br />
                 <div class="row">
                     
-                    <table class="table table-bordered">
+                    <table class="table table-bordered table-sm">
                         <thead>
                             <tr>
                                 <th>Customer No</th>

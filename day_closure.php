@@ -11,7 +11,7 @@ include 'header.php';
                 <h3 class="card-title">Summary</h3>
             </div>
             <div class="card-body">
-                <table class="table table-bordered" id="summary_table">
+                <table class="table  table-sm" id="summary_table">
                     <tbody></tbody>
                 </table>
             </div>
@@ -26,7 +26,7 @@ include 'header.php';
             </div>
             <div class="card-body">
                 <h4>Loans</h4>
-                <table class="table table-bordered" id="loans_table">
+                <table class="table table-sm" id="loans_table">
                     <thead>
                         <tr>
                             <th>Customer No</th>
@@ -44,7 +44,7 @@ include 'header.php';
                 </table>
                 <br />
                 <h4>Collections</h4>
-                <table class="table table-bordered" id="collections_table">
+                <table class="table table-sm" id="collections_table">
                     <thead>
                         <tr>
                             <th>Customer No</th>

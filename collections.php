@@ -68,7 +68,7 @@ if ($line == 'Daily') {
             <div class="card-body">
                 <div class="row">
 
-                    <table class="table table-bordered">
+                    <table class="table table-bordered table-sm">
                         <thead>
                             <tr>
                                 <th width="10%">Cus. No</th>
@@ -185,6 +185,7 @@ include('footer.php');
             html += `<tr>
                 <th colspan=4>Total</th>
                 <th class="align-right">${formatAmount(total_collected_amount)}</th>
+                <td></td>
             </tr>`
             $('#todayCollections').html(html);
         });
