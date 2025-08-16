@@ -87,19 +87,23 @@ if (!isset($_SESSION['username'])) {
     .align-right {
       text-align: right;
     }
-    .white-space-nowrap{
+
+    .white-space-nowrap {
       white-space: nowrap;
     }
-    .overdue-ind{
+
+    .overdue-ind {
       background-color: red !important;
     }
+
     #loader {
       transition: opacity 0.5s ease;
     }
+
     #loader.fade-out {
-    opacity: 0;
-    pointer-events: none;
-  }
+      opacity: 0;
+      pointer-events: none;
+    }
   </style>
 
 </head>
@@ -120,7 +124,7 @@ if (!isset($_SESSION['username'])) {
               <i class="bi bi-list"></i>
             </a>
           </li>
-          <li class="nav-item d-none d-md-block"><a href="<?=$_SESSION['home_page']?>" class="nav-link">Home</a></li>
+          <li class="nav-item d-none d-md-block"><a href="<?= $_SESSION['home_page'] ?>" class="nav-link">Home</a></li>
 
         </ul>
         <!--end::Start Navbar Links-->
@@ -136,28 +140,28 @@ if (!isset($_SESSION['username'])) {
           <!--begin::Fullscreen Toggle-->
           <li class="nav-item" style="align-content: center">
             <?php
-            if($_SESSION['role'] == 'admin'){
+            if ($_SESSION['role'] == 'admin') {
               $lines = ['Daily', 'Weekly', 'Monthly'];
-              
-              ?>
+
+            ?>
               <select class="form-control" style="cursor: pointer" onchange="switchLine()" id="global-line-type">
                 <?php
-                foreach($lines as $line){
-                  if($line == $_SESSION['line']){
-                    echo '<option selected>'.$line.'</option>';
-                  }else{
-                    echo '<option>'.$line.'</option>';
+                foreach ($lines as $line) {
+                  if ($line == $_SESSION['line']) {
+                    echo '<option selected>' . $line . '</option>';
+                  } else {
+                    echo '<option>' . $line . '</option>';
                   }
                 }
                 ?>
               </select>
-              <?php
-            }else{
+            <?php
+            } else {
             ?>
-            <b><?php
-            echo strtoupper($_SESSION['line']);
-            ?></b>
-            <?php 
+              <b><?php
+                  echo strtoupper($_SESSION['line']);
+                  ?></b>
+            <?php
             }
             ?>
           </li>
@@ -182,7 +186,7 @@ if (!isset($_SESSION['username'])) {
       <!--begin::Sidebar Brand-->
       <div class="sidebar-brand">
         <!--begin::Brand Link-->
-        <a href="<?=$_SESSION['home_page']?>" class="brand-link">
+        <a href="<?= $_SESSION['home_page'] ?>" class="brand-link">
           <!--begin::Brand Image-->
           <img
             src="dist/assets/img/AdminLTELogo.png"
@@ -219,6 +223,7 @@ if (!isset($_SESSION['username'])) {
               'monthly_collection_report.php' => 'Monthly Collection Report',
               'monthly_ledger.php' => 'Monthly Ledger',
               'monthly_expense_report.php' => 'Monthly Expense Report',
+              'defaulters_report.php' => 'Defaulters Report'
             ]
           ];
 
@@ -230,10 +235,10 @@ if (!isset($_SESSION['username'])) {
             'Day Closure',
             'Temporary Loans',
             'Investments',
-            'Reports' => ['Collection Print', 'Collection Report','Day Closure Report']
+            'Reports' => ['Collection Print', 'Collection Report', 'Day Closure Report']
           ];
 
-          
+
 
           $icons = [
             'home.php' => 'bi-speedometer2',
@@ -252,6 +257,7 @@ if (!isset($_SESSION['username'])) {
             'monthly_collection_report.php' => 'bi-calendar3',
             'monthly_expense_report.php' => 'bi-journal-arrow-down',
             'monthly_ledger.php' => 'bi-calculator',
+            'defaulters_report.php' => 'bi-exclamation-triangle-fill'
           ];
 
           ?>
@@ -267,7 +273,7 @@ if (!isset($_SESSION['username'])) {
 
               if (is_array($menu_name)) {
                 if ($_SESSION['role'] == 'admin' || ($_SESSION['role'] == 'agent' && array_key_exists($file, $privileges))) {
-                  
+
                   $menu_open = '';
                   $active = '';
                   if (array_key_exists($filename, $menu_name)) {
@@ -352,7 +358,7 @@ if (!isset($_SESSION['username'])) {
             </div>
             <div class="col-sm-6">
               <ol class="breadcrumb float-sm-end">
-                <li class="breadcrumb-item"><a href="<?=$_SESSION['home_page']?>">Home</a></li>
+                <li class="breadcrumb-item"><a href="<?= $_SESSION['home_page'] ?>">Home</a></li>
                 <li class="breadcrumb-item active" aria-current="page"><?= $title ?></li>
               </ol>
             </div>
