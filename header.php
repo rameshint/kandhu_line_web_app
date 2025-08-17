@@ -223,7 +223,8 @@ if (!isset($_SESSION['username'])) {
               'monthly_collection_report.php' => 'Monthly Collection Report',
               'monthly_ledger.php' => 'Monthly Ledger',
               'monthly_expense_report.php' => 'Monthly Expense Report',
-              'defaulters_report.php' => 'Defaulters Report'
+              'defaulters_report.php' => 'Defaulters Report',
+              'good_bad_customers_report.php' => 'Good/Bad Customers Report',
             ]
           ];
 
@@ -257,7 +258,8 @@ if (!isset($_SESSION['username'])) {
             'monthly_collection_report.php' => 'bi-calendar3',
             'monthly_expense_report.php' => 'bi-journal-arrow-down',
             'monthly_ledger.php' => 'bi-calculator',
-            'defaulters_report.php' => 'bi-exclamation-triangle-fill'
+            'defaulters_report.php' => 'bi-exclamation-triangle-fill',
+            'good_bad_customers_report.php' => 'bi-person-check'
           ];
 
           ?>

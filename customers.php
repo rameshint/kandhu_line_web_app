@@ -122,18 +122,18 @@ include('footer.php');
     });
 
     function loadCustomers() {
-	if($.fn.DataTable.isDataTable("#customerTable")){
-		$("#customerTable").DataTable().destroy();
-	}
+        if ($.fn.DataTable.isDataTable("#customerTable")) {
+            $("#customerTable").DataTable().destroy();
+        }
         $.get('get_customers.php', function(data) {
             let customers = JSON.parse(data);
             let rows = '';
             customers.forEach(c => {
-		editButton = '';
-		if (c.open_loans == 0){
-		     editButton = `<button class='btn btn-sm btn-warning' onclick='editCustomer(${JSON.stringify(c)})'>Edit</button>`
-		}
-		
+                editButton = '';
+                if (c.open_loans == 0) {
+                    editButton = `<button class='btn btn-sm btn-warning' onclick='editCustomer(${JSON.stringify(c)})'>Edit</button>`
+                }
+
                 rows += `<tr>
                 <td>${c.customer_no}</td>
                 <td>${c.name}</td> 
@@ -167,15 +167,13 @@ include('footer.php');
 
     function newCustomer(data) {
         Object.keys(data).forEach(key => {
-             
-            if(key !='id' && key!='customer_no')
+
+            if (key != 'id' && key != 'customer_no')
                 $(`[name="${key}"]`).val(data[key]);
-            else{
+            else {
                 $(`[name="${key}"]`).val('');
             }
         });
         $('#customerModal').modal('show');
     }
-
-    
 </script>
