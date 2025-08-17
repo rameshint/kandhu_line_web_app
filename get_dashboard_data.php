@@ -116,9 +116,11 @@ $date->modify('-1 days');
 $i = 1;
 $heat_map_collections = [];
 $week = 1;
+$day_dates = [];
 while ($i <= 35) {
-
-    $heat_map_collections['Week ' . $week][$date->format('D')] = intval($collections[$date->format('Y-m-d')]) == 0 ? 0 : intval($collections[$date->format('Y-m-d')]);
+    $day_name = $date->format('D');
+    $day_dates['Week ' . $week][$day_name] = $date->format('Y-m-d');
+    $heat_map_collections['Week ' . $week][$day_name] = intval($collections[$date->format('Y-m-d')]) == 0 ? 0 : intval($collections[$date->format('Y-m-d')]);
 
     if ($i % 7 == 0)
         $week++;
@@ -130,7 +132,11 @@ $heat_map = [];
 foreach ($heat_map_collections as $week => $days) {
     $day_col = [];
     foreach ($days as $day => $amount) {
-        $day_col[] = ['x' => $day, 'y' => $amount];
+        $day_col[] = [
+            'x' => $day,
+            'y' => $amount,
+            'date' => formatDate($day_dates[$week][$day]) // Use mapped date
+        ];
     }
     $day_col = array_reverse($day_col);
     $heat_map[] = [

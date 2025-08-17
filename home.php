@@ -42,7 +42,7 @@ include_once 'header.php';
         More info <i class="bi bi-link-45deg"></i>
       </a>
     </div>
- 
+
     <!--end::Small Box Widget 2-->
   </div>
   <!--end::Col-->
@@ -250,6 +250,25 @@ include_once 'footer.php';
       },
       dataLabels: {
         enabled: false
+      },
+      tooltip: {
+        theme: 'dark',
+        x: {
+          show: false
+        },
+        y: {
+          title: {
+            formatter: function(val, {
+              series,
+              seriesIndex,
+              dataPointIndex,
+              w
+            }) {
+              const point = w.globals.initialSeries[seriesIndex].data[dataPointIndex];
+              return point.date + ": ";
+            }
+          }
+        }
       },
       colors: ["#008FFB"],
 
