@@ -179,9 +179,44 @@ include_once 'header.php';
       </div>
     </div>
   </div>
+  <div class="col-lg-12">
+    <div class="card mb-4">
+      <div class="card-header">
+        <h3 class="card-title">Notifications</h3>
+      </div>
+      <div class="card-body">
+        <div id="notificationsList" style="max-height: 300px; overflow-y: auto;"></div>
+      </div>
+    </div>
+  </div>
 
 </div>
-
+<!-- Notification Modal -->
+<div class="modal fade" id="loginNotificationModal" tabindex="-1" aria-labelledby="loginNotificationModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header bg-warning">
+        <h5 class="modal-title" id="loginNotificationModalLabel">Important Notifications</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body" id="modalNotificationsList">
+        <!-- Notifications will be loaded here -->
+      </div>
+    </div>
+  </div>
+</div>
+<style>
+  .notification-item {
+    background: #fff;
+    border-left: 4px solid #ffc107;
+    padding: 12px 16px;
+    margin-bottom: 8px;
+    border-radius: 4px;
+    font-size: 15px;
+    color: #856404;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+  }
+</style>
 <?php
 include_once 'footer.php';
 ?>
@@ -190,7 +225,37 @@ include_once 'footer.php';
   integrity="sha256-+vh8GkaU7C9/wbSLIcwq82tQ2wTf44aOHA8HlBMwRI8="
   crossorigin="anonymous"></script>
 <script>
+  function getCookie(name) {
+    const value = "; " + document.cookie;
+    const parts = value.split("; " + name + "=");
+    if (parts.length === 2) return parts.pop().split(";").shift();
+  }
+
   $(document).ready(function() {
+
+    // Fetch notifications
+    $.get('get_notifications.php', function(data) {
+      const notifications = JSON.parse(data);
+      let notificationsHtml = '';
+      notifications.forEach(notification => {
+        notificationsHtml += `<div class="notification-item d-flex justify-content-between align-items-center">
+        <span>${notification.message}</span>
+        <span style="font-size:13px;color:#888;">${notification.created_on}</span>
+      </div>`;
+      });
+      $("#notificationsList").html(notificationsHtml);
+
+      var notificationModalShown = getCookie('notificationModalShown')
+      console.log(notificationModalShown);
+      // Show modal only once per login
+      if (notifications.length > 0 && !notificationModalShown) {
+        $("#modalNotificationsList").html(notificationsHtml);
+        var modal = new bootstrap.Modal(document.getElementById('loginNotificationModal'));
+        modal.show();
+        document.cookie = "notificationModalShown=true; max-age=3600; path=/";
+      }
+    });
+
     $.get('get_dashboard_data.php', function(data) {
       const dashboardData = JSON.parse(data);
       const tiles = dashboardData.tiles;

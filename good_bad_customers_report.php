@@ -15,15 +15,15 @@ SELECT
 	sum(IFNULL(col.amount,0)) AS total_paid_amount,
 	(SUM(l.amount) - SUM(IFNULL(col.amount,0))) AS total_balance,
 		case 
-			when CURDATE() > l.expiry_date AND 	(SUM(l.amount) - SUM(IFNULL(col.amount,0)))
+			when CURDATE() > l.expiry_date AND 	(SUM(l.amount) - SUM(IFNULL(col.amount,0))) > 0
 			then 1 ELSE 0
 		END 
 	as has_overdue
 FROM customers c
-JOIN loans l ON l.customer_id = c.id AND l.loan_type = '$loan_type'
+JOIN (SELECT s.* ,ROW_NUMBER() over(PARTITION BY s.customer_id ORDER BY s.id DESC) rn from loans s ) l ON l.customer_id = c.id AND l.loan_type = '$loan_type' AND l.rn <= 3
 LEFT JOIN collections col ON col.loan_id = l.id AND l.flag = 1 AND col.head = 'EMI'
 GROUP BY l.id
-) s GROUP BY s.id  
+) s GROUP BY s.id
 ";
 // Apply filter if set
 $filter = isset($_GET['filter']) ? $_GET['filter'] : 'all';

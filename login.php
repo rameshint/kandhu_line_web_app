@@ -25,14 +25,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 $_SESSION['user_id'] = $user['id'];
                 $_SESSION['role'] = $user['role'];
                 $_SESSION['line'] = $user['line'];
-                if($user['role'] =='agent'){
+                if ($user['role'] == 'agent') {
                     $_SESSION['home_page'] = 'collections.php';
+                    echo "<script>sessionStorage.setItem('notificationModalShown', 'false');</script>";
                     header("Location: collections.php");
-                }else{
+                } else {
                     $_SESSION['home_page'] = 'home.php';
+                    echo "<script>sessionStorage.setItem('notificationModalShown', 'false');</script>";
                     header("Location: home.php");
                 }
-                
+
                 exit();
             } else {
                 // User is inactive
@@ -50,4 +52,3 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         exit();
     }
 }
-?>
