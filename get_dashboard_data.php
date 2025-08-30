@@ -112,7 +112,7 @@ while ($row = mysqli_fetch_assoc($result)) {
     $collections[$row['collection_date']] = $row['amt'];
 }
 $date = new DateTime();
-$date->modify('-1 days');
+#$date->modify('-1 days');
 $i = 1;
 $heat_map_collections = [];
 $week = 1;

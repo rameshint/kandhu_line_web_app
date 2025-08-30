@@ -1,1 +1,30 @@
+# Composer
+vendor/
+
+# Firebase credentials
+firebase-service-account.json
+
+# Environment files
+.env
+.env.local
+
+# IDE files
+.vscode/
+.idea/
+
+# Windows
+Thumbs.db
+Desktop.ini
+
+# Mac
+.DS_Store
+
+# Logs
+*.log
+
+# Temporary files
+*.tmp
+*.temp
+
+# Database files
 db.php

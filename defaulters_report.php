@@ -16,7 +16,7 @@ LEFT JOIN collections a ON a.loan_id = l.id AND a.flag = 1  AND a.head = 'EMI'
 WHERE l.loan_closed IS NULL AND l.loan_type = '$loan_type'
 GROUP BY l.id
 HAVING CURDATE() > l.expiry_date AND balance_amount > 0
-ORDER BY l.expiry_date asc
+ORDER BY l.expiry_date desc
 ";
 
 $result = $conn->query($sql);
@@ -67,12 +67,12 @@ $result = $conn->query($sql);
                                     <th>Customer Name</th>
                                     <th>Address</th>
                                     <th>Contact No</th>
-                                    <th>Opening Date</th>
                                     <th>End Date</th>
                                     <th>Loan Amount</th>
                                     <th>Collected</th>
                                     <th>Balance</th>
-                                    <th>Overdue Days</th>
+                                    <th>Late</th>
+									<th style="width:10%">Remarks</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -84,12 +84,13 @@ $result = $conn->query($sql);
                                         <td><?= htmlspecialchars($row['name']) ?></td>
                                         <td><?= htmlspecialchars($row['address_line1']) ?></td>
                                         <td><?= $row['contact_no'] . (!empty($row['secondary_contact_no']) ? "<br />" : "") . $row['secondary_contact_no'] ?></td>
-                                        <td><?= formatDate($row['loan_date']) ?></td>
+                                         
                                         <td><?= formatDate($row['expiry_date']) ?></td>
                                         <td align="right"><?= number_format($row['loan_amount'], 2) ?></td>
                                         <td align="right"><?= number_format($row['paid_amount'], 2) ?></td>
                                         <td align="right"><?= number_format($row['balance_amount'], 2) ?></td>
                                         <td align="right"><?= $row['overdue_days'] ?></td>
+										<td></td>
                                     </tr>
                                 <?php } ?>
                             </tbody>

@@ -219,6 +219,7 @@ if (!isset($_SESSION['username'])) {
             'temporary_loans.php' => 'Temporary Loans',
             'investments.php' => 'Investments',
             'agents.php' => 'Agents',
+            'sync_to_firebase.php' => 'Sync to Mobile App',
             'Reports' => [
               'daily_print.php' => 'Collection Print',
               'day_closure_report.php' => 'Day Closure Report',
@@ -263,7 +264,8 @@ if (!isset($_SESSION['username'])) {
             'monthly_expense_report.php' => 'bi-journal-arrow-down',
             'monthly_ledger.php' => 'bi-calculator',
             'defaulters_report.php' => 'bi-exclamation-triangle-fill',
-            'good_bad_customers_report.php' => 'bi-person-check'
+            'good_bad_customers_report.php' => 'bi-person-check',
+            'sync_to_firebase.php' => 'bi-cloud-upload'
           ];
 
           ?>
