@@ -31,10 +31,12 @@ class FirebaseMySQLSync
         }
 
         // Initialize MySQL PDO connection using db.php settings
+        // get the settings from db.php
+        require_once 'db.php';
         $this->pdo = new PDO(
-            "mysql:host=localhost;port=3307;dbname=finance",
-            "root",
-            "",
+            "mysql:host=$servername;port=$dbport;dbname=$dbname",
+            $username,
+            $password,
             [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]
         );
     }    // === PART 1: Sync customers from MySQL → Firebase ===
