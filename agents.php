@@ -1,6 +1,6 @@
-<?php 
+<?php
 $title = 'Agents';
-include 'header.php'; 
+include 'header.php';
 ?>
 <div class="row">
     <div class="col-12">
@@ -19,6 +19,7 @@ include 'header.php';
                             <tr>
                                 <th>Name</th>
                                 <th>Contact No</th>
+                                <th>MAC Address</th>
                                 <th>Status</th>
                                 <th>Actions</th>
                             </tr>
@@ -54,6 +55,11 @@ include 'header.php';
                     <div class="mb-2">
                         <label>Address</label>
                         <textarea name="address" id="agent_address" class="form-control"></textarea>
+                    </div>
+                    <div class="mb-2">
+                        <label>Mobile MAC Address</label>
+                        <input type="text" name="mac_address" id="agent_mac_address" class="form-control" placeholder="e.g., 00:1B:44:11:3A:B7">
+                        <small class="form-text text-muted">MAC address of the authorized mobile device</small>
                     </div>
                     <div class="mb-2">
                         <label>Status</label>
@@ -100,6 +106,7 @@ include('footer.php');
                 <tr>
                     <td>${a.name}</td>
                     <td>${a.contact_no}</td>
+                    <td>${a.mac_address || 'Not Set'}</td>
                     <td>${a.status == 1 ? 'Active' : 'Inactive'}</td>
                     <td>
                         <button class="btn btn-sm btn-warning" onclick='editAgent(${JSON.stringify(a)})'>Edit</button>
@@ -123,6 +130,7 @@ include('footer.php');
         $('#agent_name').val(agent.name);
         $('#agent_contact').val(agent.contact_no);
         $('#agent_address').val(agent.address);
+        $('#agent_mac_address').val(agent.mac_address || '');
         $('#agent_status').val(agent.status);
         $('#agentModal').modal('show');
     }

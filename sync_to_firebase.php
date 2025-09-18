@@ -11,9 +11,10 @@ include('header.php');
                 <h3 class="card-title">Individual Sync Operations</h3>
             </div>
             <div class="card-body">
-                <button class="btn btn-primary" onclick="syncData('sync_customers')">Sync Customers to Mobile App</button>
-                <button class="btn btn-primary" onclick="syncData('sync_loans')">Sync Loans to Mobile App</button>
+                <button class="btn btn-primary" onclick="syncData('sync_agents')">Sync Agents to Firebase</button>
+                <button class="btn btn-primary" onclick="syncData('sync_pending_loans')">Sync Pending Loans to Firebase</button>
                 <button class="btn btn-warning" onclick="syncData('sync_collections')">Sync Collections from Mobile App</button>
+                <button class="btn btn-info" onclick="syncData('reset_daily_collections')">Reset Daily Collections</button>
             </div>
         </div>
     </div>
@@ -82,7 +83,7 @@ include('footer.php');
         resultDiv.innerHTML = '<div class="result">Syncing... Please wait.</div>';
 
         // Using fetch with POST method for better security
-        fetch('firebase_sync_handler_realtime.php', {
+        fetch('firebase_sync_handler.php', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',

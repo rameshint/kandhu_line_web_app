@@ -75,9 +75,7 @@ class FirebaseMySQLSync
                     c.name, 
                     l.amount - IFNULL(a.collected_amt, 0) balance_amount, 
                     l.expiry_date close_date, 
-                    round(l.amount/l.tenure, 0) emi_amount,
-                    IFNULL(t.today_collected_amount, 0) today_collected_amount,
-                    t.collected_date
+                    round(l.amount/l.tenure, 0) emi_amount
                 FROM customers c 
                 INNER JOIN loans l ON l.customer_id = c.id AND l.loan_closed IS NULL
                 LEFT JOIN (
@@ -86,12 +84,6 @@ class FirebaseMySQLSync
                     WHERE cl.head='EMI' 
                     GROUP BY loan_id
                 ) a ON a.loan_id = l.id
-                LEFT JOIN (
-                    SELECT loan_id, SUM(amount) today_collected_amount, MAX(collection_date) collected_date
-                    FROM collections_temp 
-                    WHERE collection_date = CURDATE() AND sync_status = 'synced'
-                    GROUP BY loan_id
-                ) t ON t.loan_id = l.id
                 WHERE l.loan_type = 'Daily' AND l.amount - IFNULL(a.collected_amt, 0) > 0
             ");
             $stmt->execute();
@@ -109,8 +101,8 @@ class FirebaseMySQLSync
                     'balanceAmount' => floatval($loan['balance_amount']),
                     'closeDate' => (new DateTime($loan['close_date']))->format('c'),
                     'emiAmount' => floatval($loan['emi_amount']),
-                    'todayCollectedAmount' => floatval($loan['today_collected_amount']),
-                    'collectedDate' => $loan['collected_date'] ? (new DateTime($loan['collected_date']))->format('c') : null,
+                    'todayCollectedAmount' => null,
+                    'collectedDate' => null,
                     'lastUpdated' => (new DateTime())->format('c')
                 ];
 
@@ -124,90 +116,96 @@ class FirebaseMySQLSync
         }
     }
 
-    // === PART 3: Sync collections from Firebase → MySQL temp table ===
+    // === PART 3: Sync collections from Firebase pending loans → MySQL temp table ===
     public function syncCollectionsFromFirebase()
     {
         try {
-            $collectionsRef = $this->database->getReference('collections');
-            $collectionsSnapshot = $collectionsRef->getSnapshot();
-            $collectionsData = $collectionsSnapshot->getValue();
+            $pendingLoansRef = $this->database->getReference('pending_loans');
+            $pendingLoansSnapshot = $pendingLoansRef->getSnapshot();
+            $pendingLoansData = $pendingLoansSnapshot->getValue();
 
             $successCount = 0;
             $errorCount = 0;
             $errors = [];
 
-            if ($collectionsData) {
-                foreach ($collectionsData as $collectionId => $data) {
-                    // Skip if already synced
-                    if (isset($data['syncFlag']) && $data['syncFlag'] === true) {
-                        continue;
-                    }
+            if ($pendingLoansData) {
+                foreach ($pendingLoansData as $loanId => $loanData) {
+                    // Check if there's today collection amount and it's not synced yet
+                    if (
+                        isset($loanData['todayCollectedAmount']) &&
+                        floatval($loanData['todayCollectedAmount']) > 0 &&
+                        (!isset($loanData['syncFlag']) || $loanData['syncFlag'] !== true)
+                    ) {
 
-                    try {
-                        // Begin transaction
-                        $this->pdo->beginTransaction();
+                        try {
+                            // Begin transaction
+                            $this->pdo->beginTransaction();
 
-                        // Lookup loan_id using Firebase loanId
-                        $loanStmt = $this->pdo->prepare("SELECT id FROM loans WHERE id = ?");
-                        $mysqlLoanId = intval(str_replace('LOAN_', '', $data['loanId']));
-                        $loanStmt->execute([$mysqlLoanId]);
-                        $loanResult = $loanStmt->fetch(PDO::FETCH_ASSOC);
+                            // Lookup loan_id using Firebase loanId
+                            $mysqlLoanId = intval(str_replace('LOAN_', '', $loanId));
+                            $loanStmt = $this->pdo->prepare("SELECT id FROM loans WHERE id = ?");
+                            $loanStmt->execute([$mysqlLoanId]);
+                            $loanResult = $loanStmt->fetch(PDO::FETCH_ASSOC);
 
-                        if (!$loanResult) {
-                            throw new Exception("Loan not found: " . $data['loanId']);
+                            if (!$loanResult) {
+                                throw new Exception("Loan not found: " . $loanId);
+                            }
+
+                            // Get agent ID from loan data or use default
+                            $agentId = $loanData['agentId'] ?? 1; // Default agent if not specified
+
+                            // Verify agent exists
+                            $agentStmt = $this->pdo->prepare("SELECT id FROM agents WHERE id = ?");
+                            $agentStmt->execute([$agentId]);
+                            $agentResult = $agentStmt->fetch(PDO::FETCH_ASSOC);
+
+                            if (!$agentResult) {
+                                // Use default agent ID 1 if agent not found
+                                $agentId = 1;
+                            }
+
+                            // Use collected date from Firebase or today's date
+                            $collectionDate = isset($loanData['collectedDate']) ?
+                                (new DateTime($loanData['collectedDate']))->format('Y-m-d') :
+                                date('Y-m-d');
+                            $collectionTime = date('H:i:s');
+
+                            // Insert into MySQL collections_temp table
+                            $insertStmt = $this->pdo->prepare("
+                                INSERT INTO collections_temp (
+                                    loan_id, agent_id, collection_date, collection_time, head, amount, 
+                                    firebase_collection_id, sync_status, created_on
+                                ) VALUES (?, ?, ?, ?, 'EMI', ?, ?, 'synced', NOW())
+                            ");
+
+                            $insertStmt->execute([
+                                $loanResult['id'],
+                                $agentId,
+                                $collectionDate,
+                                $collectionTime,
+                                $loanData['todayCollectedAmount'],
+                                $loanId // Store Firebase loan ID as reference
+                            ]);
+
+                            // Commit transaction
+                            $this->pdo->commit();
+
+                            // Mark as synced in Firebase
+                            $this->database->getReference('pending_loans/' . $loanId)->update([
+                                'syncFlag' => true,
+                                'syncedAt' => (new DateTime())->format('c')
+                            ]);
+
+                            $successCount++;
+                        } catch (Exception $e) {
+                            // Rollback transaction
+                            $this->pdo->rollBack();
+                            $errorCount++;
+                            $errors[] = [
+                                'loanId' => $loanId,
+                                'error' => $e->getMessage()
+                            ];
                         }
-
-                        // Lookup agent_id using agentId
-                        $agentStmt = $this->pdo->prepare("SELECT id FROM agents WHERE id = ?");
-                        $agentStmt->execute([$data['agentId']]);
-                        $agentResult = $agentStmt->fetch(PDO::FETCH_ASSOC);
-
-                        if (!$agentResult) {
-                            throw new Exception("Agent not found: " . $data['agentId']);
-                        }
-
-                        // Convert timestamp to collection_date
-                        $collectionDate = (new DateTime($data['timestamp']))->format('Y-m-d');
-                        $collectionTime = (new DateTime($data['timestamp']))->format('H:i:s');
-
-                        // Insert into MySQL collections_temp table (temporary storage)
-                        $insertStmt = $this->pdo->prepare("
-                            INSERT INTO collections_temp (
-                                loan_id, agent_id, collection_date, collection_time, head, amount, 
-                                firebase_collection_id, sync_status, created_on
-                            ) VALUES (?, ?, ?, ?, 'EMI', ?, ?, 'synced', NOW())
-                        ");
-
-                        $insertStmt->execute([
-                            $loanResult['id'],
-                            $agentResult['id'],
-                            $collectionDate,
-                            $collectionTime,
-                            $data['amount'],
-                            $collectionId // Store Firebase collection ID for reference
-                        ]);
-
-                        // Commit transaction
-                        $this->pdo->commit();
-
-                        // Update syncFlag = true in Firebase
-                        $this->database->getReference('collections/' . $collectionId)->update([
-                            'syncFlag' => true,
-                            'syncedAt' => (new DateTime())->format('c')
-                        ]);
-
-                        // Update the pending loan with today's collection
-                        $this->updatePendingLoanCollection($data['loanId'], $data['amount'], $collectionDate);
-
-                        $successCount++;
-                    } catch (Exception $e) {
-                        // Rollback transaction
-                        $this->pdo->rollBack();
-                        $errorCount++;
-                        $errors[] = [
-                            'collectionId' => $collectionId,
-                            'error' => $e->getMessage()
-                        ];
                     }
                 }
             }
@@ -223,26 +221,24 @@ class FirebaseMySQLSync
         }
     }
 
-    // === Helper function to update pending loan collection in Firebase ===
-    private function updatePendingLoanCollection($loanId, $amount, $collectionDate)
+    // === Helper function to reset today's collection after sync ===
+    private function resetTodayCollectionAfterSync($loanId)
     {
         try {
             $pendingLoanRef = $this->database->getReference('pending_loans/' . $loanId);
             $snapshot = $pendingLoanRef->getSnapshot();
-            
+
             if ($snapshot->exists()) {
-                $currentData = $snapshot->getValue();
-                $currentTodayAmount = floatval($currentData['todayCollectedAmount'] ?? 0);
-                
                 $pendingLoanRef->update([
-                    'todayCollectedAmount' => $currentTodayAmount + floatval($amount),
-                    'collectedDate' => (new DateTime($collectionDate))->format('c'),
+                    'todayCollectedAmount' => 0,
+                    'collectedDate' => null,
+                    'syncFlag' => false,
                     'lastUpdated' => (new DateTime())->format('c')
                 ]);
             }
         } catch (Exception $e) {
             // Log error but don't fail the main operation
-            error_log("Failed to update pending loan collection: " . $e->getMessage());
+            error_log("Failed to reset today collection: " . $e->getMessage());
         }
     }
 
@@ -367,6 +363,29 @@ class FirebaseMySQLSync
         }
     }
 
+    // === Reset all collections for new day ===
+    public function resetDailyCollections()
+    {
+        try {
+            $pendingLoansRef = $this->database->getReference('pending_loans');
+            $pendingLoansSnapshot = $pendingLoansRef->getSnapshot();
+            $pendingLoansData = $pendingLoansSnapshot->getValue();
+
+            $resetCount = 0;
+
+            if ($pendingLoansData) {
+                foreach ($pendingLoansData as $loanId => $loanData) {
+                    $this->resetTodayCollectionAfterSync($loanId);
+                    $resetCount++;
+                }
+            }
+
+            return ['success' => true, 'loans_reset' => $resetCount];
+        } catch (Exception $e) {
+            return ['success' => false, 'error' => $e->getMessage()];
+        }
+    }
+
     // === Full Sync Operation ===
     public function performFullSync()
     {
@@ -402,6 +421,10 @@ if (isset($_POST['action']) || isset($_GET['action'])) {
                 echo json_encode($sync->syncCollectionsFromFirebase());
                 break;
 
+            case 'reset_daily_collections':
+                echo json_encode($sync->resetDailyCollections());
+                break;
+
             case 'full_sync':
                 echo json_encode($sync->performFullSync());
                 break;
@@ -434,4 +457,3 @@ if (isset($_POST['action']) || isset($_GET['action'])) {
     }
     exit;
 }
-?>
