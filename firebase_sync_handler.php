@@ -13,20 +13,27 @@ class FirebaseMySQLSync
 
     public function __construct()
     {
-        // Initialize Firebase
-        $this->firebase = (new Factory)
-            ->withServiceAccount(__DIR__ . '/firebase-service-account.json');
+        try {
+            // Initialize Firebase with correct database URL
+            $this->firebase = (new Factory)
+                ->withServiceAccount(__DIR__ . '/firebase-service-account.json')
+                ->withDatabaseUri('https://dhanalakshmi-finance-default-rtdb.firebaseio.com');
 
-        // Initialize Realtime Database (no gRPC required)
-        $this->database = $this->firebase->createDatabase();
+            // Initialize Realtime Database
+            $this->database = $this->firebase->createDatabase();
 
-        // Initialize MySQL PDO connection using db.php settings
-        $this->pdo = new PDO(
-            "mysql:host=localhost;port=3307;dbname=finance",
-            "root",
-            "",
-            [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]
-        );
+            // Inherit MySQL DB variables from db.php
+            require_once __DIR__ . '/db.php';
+            $this->pdo = new PDO(
+                "mysql:host=$servername;port=$db_port;dbname=$dbname",
+                $username,
+                $password,
+                [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]
+            );
+        } catch (Exception $e) {
+            error_log("Firebase initialization error: " . $e->getMessage());
+            throw $e;
+        }
     }
 
     // === PART 1: Sync agents from MySQL → Firebase ===
@@ -383,8 +390,9 @@ class FirebaseMySQLSync
 
 // === AJAX Handler ===
 if (isset($_POST['action']) || isset($_GET['action'])) {
+     
     header('Content-Type: application/json');
-
+    
     try {
         $sync = new FirebaseMySQLSync();
         $action = $_POST['action'] ?? $_GET['action'];

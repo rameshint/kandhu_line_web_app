@@ -17,10 +17,17 @@ try {
     echo "JSON is valid!<br>";
     echo "Project ID: " . $data['project_id'] . "<br>";
 
-    // Test Firebase initialization
-    $firebase = (new Factory)->withServiceAccount(__DIR__ . '/firebase-service-account.json');
+    // Test Firebase initialization with correct database URL and SSL fix
+    $httpClientOptions = [
+        'verify' => false, // For development only - fix SSL certificate issue
+    ];
 
-    echo "Firebase factory created!<br>";
+    $firebase = (new Factory)
+        ->withServiceAccount(__DIR__ . '/firebase-service-account.json')
+        ->withDatabaseUri('https://dhanalakshmi-finance-default-rtdb.firebaseio.com')
+        ->withHttpClientOptions($httpClientOptions);
+
+    echo "Firebase factory created with correct database URL!<br>";
 
     // Try Realtime Database instead of Firestore
     $database = $firebase->createDatabase();
