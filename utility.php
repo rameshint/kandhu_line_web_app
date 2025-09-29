@@ -1,6 +1,7 @@
 <?php
-include_once'db.php';
-function formatToIndianCurrency($amount) {
+include_once 'db.php';
+function formatToIndianCurrency($amount)
+{
     $amount = number_format($amount, 2, '.', '');
     $parts = explode('.', $amount);
     $integerPart = $parts[0];
@@ -20,7 +21,8 @@ function formatToIndianCurrency($amount) {
     return  $formatted . "." . $decimalPart;
 }
 
-function formatDate($dateString) {
+function formatDate($dateString)
+{
     if (!$dateString) {
         return '';
     }
@@ -28,9 +30,10 @@ function formatDate($dateString) {
 }
 
 
-function getBusinessDate(){
+function getBusinessDate()
+{
     global $conn;
-    $sql = "SELECT date_add(MAX(closure_date),interval 1 DAY) running_date FROM day_summary where line = '".$_SESSION['line']."'";
+    $sql = "SELECT date_add(MAX(closure_date),interval 1 DAY) running_date FROM day_summary where line = '" . $_SESSION['line'] . "'";
     $stmt = $conn->prepare($sql);
     $stmt->execute();
     $result = $stmt->get_result();
@@ -38,4 +41,3 @@ function getBusinessDate(){
     $row = $result->fetch_assoc();
     return $row['running_date'];
 }
-?>

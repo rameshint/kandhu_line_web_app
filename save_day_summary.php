@@ -38,23 +38,26 @@ if ($_POST['net_amount'] != '') {
         SET repaid_amount = repaid_amount +  a.amount, repay_date = case when l.amount <= (repaid_amount +  a.amount) then CURRENT_DATE() ELSE NULL end
         where l.line = ?
         ");
-        $stmt->bind_param("s",$line);
+        $stmt->bind_param("s", $line);
         $stmt->execute();
 
-        $stmt = $conn->prepare("UPDATE temp_loan_payments p SET flag=1, summary_id=? WHERE flag = 0 and exists(select 1 from temp_loans t where t.id = p.temp_loan_id and t.line = ?)");
+        $stmt = $conn->prepare("UPDATE temp_loan_payments p SET flag=1, summary_id=? 
+        WHERE flag = 0 and exists(select 1 from temp_loans t where t.id = p.temp_loan_id and t.line = ?)");
         $stmt->bind_param("is", $summary_id, $line);
         $stmt->execute();
 
-        $stmt = $conn->prepare("UPDATE loans SET loan_closed = CURRENT_DATE(), `status` = 'Closed' 
-            WHERE id IN (
-            SELECT id FROM (
-                SELECT l.id, l.amount, ifnull(SUM(c.amount),0) paid FROM loans l
-                INNER JOIN collections c ON c.loan_id = l.id and c.head = 'EMI'
-                GROUP BY l.id) g
-                WHERE amount - paid <= 0)
-            and loan_type = ?"
-        );  
-        $stmt->bind_param("s",$line);
+        $stmt = $conn->prepare(
+            "UPDATE loans d 
+        INNER JOIN (
+        SELECT * FROM (
+        SELECT l.id, l.amount, ifnull(SUM(c.amount),0) paid,MAX(c.collection_date) col_date FROM loans l
+                        INNER JOIN collections c ON c.loan_id = l.id and c.head = 'EMI'
+                        GROUP BY l.id) h WHERE h.amount - h.paid <= 0
+                            ) f ON d.id = f.id 
+        SET d.loan_closed = f.col_date
+        WHERE d.loan_closed IS null and d.loan_type = ?"
+        );
+        $stmt->bind_param("s", $line);
         $stmt->execute();
 
 

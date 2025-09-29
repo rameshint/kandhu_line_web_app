@@ -4,54 +4,61 @@ include('header.php');
 require 'db.php';
 
 
-$current_date = new DateTime();
+$current_date = new DateTime(getBusinessDate());
 #$current_date->modify('-1 Months');
 $month = $current_date->format('Y-m');
 if ($_GET['month'] != '') {
     $month = $_GET['month'];
 }
+$current_date_str = $current_date->format('Y-m-d');
 $start_date = new DateTime($month . "-01");
 $end_date = new DateTime($start_date->format("Y-m-t"));
 $st = $start_date->format('Y-m-d');
 $et = $end_date->format('Y-m-d');
 
+
 if ($start_date < $end_date) {
     $sql = "select f.* , g.late_pay, case when DATE_FORMAT(CURDATE(), '%Y-%m-01') <= ? then if(IFNULL(j.id,0)>0,1,0) ELSE 0 END due_delay from (
-            SELECT DISTINCT l.id, c.customer_no,c.name,l.amount,l.loan_date, l.expiry_date,l.status, 
-            case when l.expiry_date IS NOT NULL and l.status = 'Open' then if(l.expiry_date<CURRENT_DATE,1,0) ELSE 0 END overdue FROM loans l
+            SELECT DISTINCT l.id, c.customer_no,c.name,l.amount,l.loan_date, IFNULL(l.loan_closed,l.expiry_date) expiry_date,l.status, 
+            case when l.expiry_date IS NOT NULL and l.status = 'Open' then if(l.expiry_date<'$current_date_str',1,0) ELSE 0 END overdue FROM loans l
             INNER JOIN customers c ON c.id = l.customer_id
             WHERE (? BETWEEN l.loan_date AND IFNULL(l.loan_closed,l.expiry_date)
             OR ? BETWEEN l.loan_date AND IFNULL(l.loan_closed,l.expiry_date))
             and l.flag = 1
             and l.loan_type = 'Daily'
             UNION 
-            SELECT DISTINCT l.id,c.customer_no,c.name,l.amount,l.loan_date, l.expiry_date,l.status, 
-            case when l.expiry_date IS NOT NULL and l.status = 'Open' then if(l.expiry_date<CURRENT_DATE,1,0) ELSE 0 END overdue FROM collections cs
+            SELECT DISTINCT l.id,c.customer_no,c.name,l.amount,l.loan_date, IFNULL(l.loan_closed,l.expiry_date) expiry_date,l.status, 
+            case when l.expiry_date IS NOT NULL and l.status = 'Open' then if(l.expiry_date<'$current_date_str',1,0) ELSE 0 END overdue FROM collections cs
             inner join loans l ON l.id = cs.loan_id and l.loan_type = 'Daily'
             INNER JOIN customers c ON c.id = l.customer_id
             WHERE cs.collection_date BETWEEN  ? AND ? and cs.flag = 1 
             ORDER BY 2
             ) f 
-            left join (SELECT l.id,  (datediff(CURRENT_DATE , l.loan_date) * l.amount / l.tenure - ((l.tenure/100)*5) * l.amount / l.tenure) - ifnull(c.collected,0) > 0 late_pay FROM loans l
+            left join (SELECT l.id,  (datediff('$current_date_str' , l.loan_date) * l.amount / l.tenure - ((l.tenure/100)*5) * l.amount / l.tenure) - ifnull(c.collected,0) > 0 late_pay FROM loans l
             LEFT JOIN (SELECT loan_id, SUM(amount) collected FROM collections WHERE flag = 1 GROUP BY loan_id) c ON c.loan_id = l.id
-            WHERE l.flag = 1 AND l.`status` = 'Open' AND l.loan_type='Daily' AND l.expiry_date > current_date) g on f.id = g.id
+            WHERE l.flag = 1 AND l.`status` = 'Open' AND l.loan_type='Daily' AND l.expiry_date > '$current_date_str') g on f.id = g.id
             LEFT JOIN (SELECT l.id FROM loans l
             WHERE l.loan_type = 'Daily' AND l.`status` = 'Open'
-            AND not EXISTS(SELECT 1 FROM collections c WHERE c.loan_id = l.id AND c.flag = 1 and c.collection_date >= DATE_SUB(CURRENT_DATE, INTERVAL 2 DAY))) j ON j.id = f.id";
+            AND not EXISTS(SELECT 1 FROM collections c WHERE c.loan_id = l.id AND c.flag = 1 and c.collection_date >= DATE_SUB('$current_date_str', INTERVAL 2 DAY))) j ON j.id = f.id";
     $stmt = $conn->prepare($sql);
     $stmt->bind_param("sssss", $st, $st, $et, $st, $et);
     $stmt->execute();
     $result = $stmt->get_result();
     $loans = [];
     while ($row = $result->fetch_assoc()) {
-        $loans[] = $row;
+        if (array_key_exists($row['customer_no'], $loans)) {
+            $loans[$row['customer_no']] = array_merge($loans[$row['customer_no']], $row);
+        } else {
+            $loans[$row['customer_no']] = $row;
+        }
     }
 
     $sql = "
-        SELECT c.loan_id, DATE_FORMAT(c.collection_date,'%d') collection_date,SUM(c.amount) amount 
+        SELECT cu.customer_no, DATE_FORMAT(c.collection_date,'%d') collection_date,SUM(c.amount) amount 
         FROM collections c 
         INNER JOIN loans l ON l.id = c.loan_id AND l.loan_type = 'Daily'
-        WHERE c.flag = 1 AND collection_date BETWEEN  ? AND ? GROUP BY loan_id, DATE_format(collection_date,'%d') 
+        INNER JOIN customers cu ON cu.id = l.customer_id
+        WHERE c.flag = 1 AND collection_date BETWEEN  ? AND ? GROUP BY cu.customer_no, DATE_format(collection_date,'%d') 
     ";
     $stmt = $conn->prepare($sql);
     $stmt->bind_param("ss", $st, $et);
@@ -60,10 +67,12 @@ if ($start_date < $end_date) {
     $collections = [];
     $date_wise_collections = [];
     while ($row = $result->fetch_assoc()) {
-        $collections[$row['loan_id']][$row['collection_date']] = $row['amount'];
+        $collections[$row['customer_no']][$row['collection_date']] = $row['amount'];
         $date_wise_collections[$row['collection_date']]  += $row['amount'];
     }
 }
+
+
 
 ?>
 <div class="row">
@@ -128,7 +137,7 @@ if ($start_date < $end_date) {
                                 $i = 1;
                                 $start_date->format("Y-m-d");
 
-                                foreach ($loans as $loan) {
+                                foreach ($loans as $customer_no => $loan) {
                                     $class = '';
                                     if ($loan['overdue']) {
                                         $class = 'table-danger';
@@ -156,10 +165,14 @@ if ($start_date < $end_date) {
                                         <?php
                                         $start = clone $start_date;
                                         while ($start <= $end_date) {
-                                            if ($collections[$loan['id']][$start->format('d')] > 0) {
-                                                echo '<td align=center>' . formatToIndianCurrency($collections[$loan['id']][$start->format('d')]) . '</td>';
+                                            if ($collections[$customer_no][$start->format('d')] > 0) {
+                                                $text_color_style = '';
+                                                if ($start <= $loan_date_obj) {
+                                                    $text_color_style = 'color: grey;';
+                                                }
+                                                echo '<td align=center style="' . $text_color_style . '">' . formatToIndianCurrency($collections[$customer_no][$start->format('d')]) . '</td>';
                                             } else {
-                                                if ($start <= $current_date && $start->format('Y-m-d') >= $loan['loan_date'] && $start->format('Y-m-d') <= $loan['expiry_date'])
+                                                if ($start <= $current_date && $start->format('Y-m-d') > $loan['loan_date'] && $start->format('Y-m-d') <= $loan['expiry_date'])
                                                     echo '<td align=center>-</td>';
                                                 else
                                                     echo '<td align=center></td>';
@@ -197,8 +210,8 @@ if ($start_date < $end_date) {
                             </tfoot>
                         </table>
                         <div class="col-md-3">
-                        <span class="badge text-bg-info">Due Delay</span>    
-                        <span class="badge text-bg-warning">Late Pay</span>
+                            <span class="badge text-bg-info">Due Delay</span>
+                            <span class="badge text-bg-warning">Late Pay</span>
                             <span class="badge text-bg-danger">Overdue</span>
                         </div>
                     </div>
